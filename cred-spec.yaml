@@ -11,17 +11,29 @@ servers:
 
 tags:
   - name: Auth
+    description: User registration, login, token refresh, and logout.
   - name: Orgs
+    description: Organization CRUD and settings management.
   - name: Org Members
+    description: Staff membership within an organization.
   - name: Org Learners
+    description: Learners affiliated with an organization.
   - name: Cohorts
+    description: Groups of learners within an organization.
   - name: Users
+    description: Platform-wide user profiles and settings.
   - name: Badges
+    description: Badge definitions, criteria, and lifecycle.
   - name: Collections
+    description: Curated groups of badges.
   - name: Registry
+    description: Public registry of published collections.
   - name: Requests
+    description: Membership and issue-authorization request workflows.
   - name: Issuances
+    description: Badge issuance and revocation.
   - name: Public
+    description: Unauthenticated public verification endpoints.
 
 security:
   - bearerAuth: []
@@ -29,9 +41,11 @@ security:
 paths:
   /auth/register:
     post:
+      operationId: register
       tags: [Auth]
       summary: Register a user account
-      security: []  # public
+      description: Creates a new user account and returns JWT tokens. Email must be unique.
+      security: []
       requestBody:
         required: true
         content:
@@ -39,16 +53,24 @@ paths:
             schema: { $ref: "#/components/schemas/RegisterRequest" }
       responses:
         "201":
-          description: Created
+          description: Account created
           content:
             application/json:
               schema: { $ref: "#/components/schemas/AuthResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
 
   /auth/login:
     post:
+      operationId: login
       tags: [Auth]
       summary: Login and receive JWT access token
-      security: []  # public
+      description: Authenticates a user by email and password, returning JWT tokens.
+      security: []
       requestBody:
         required: true
         content:
@@ -60,12 +82,19 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/AuthResponse" }
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
 
   /auth/refresh:
     post:
+      operationId: refreshToken
       tags: [Auth]
       summary: Refresh access token
-      security: []  # typically refresh token cookie or separate token
+      description: Exchanges a valid refresh token for a new access/refresh token pair.
+      security: []
       requestBody:
         required: true
         content:
@@ -77,18 +106,28 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/AuthResponse" }
+        "401":
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
 
   /auth/logout:
     post:
+      operationId: logout
       tags: [Auth]
       summary: Logout (invalidate refresh token / session)
+      description: Invalidates the current session and refresh token.
       responses:
         "204": { description: No Content }
+        "401": { $ref: "#/components/responses/Unauthorized" }
 
   /auth/createorg:
     post:
+      operationId: createOrg
       tags: [Auth, Orgs]
       summary: Create a new organization
+      description: Creates a new organization. The authenticated user becomes the owner.
       x-permissions: ["org:create"]
       requestBody:
         required: true
@@ -101,12 +140,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Org" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
 
   /orgs:
     get:
+      operationId: listOrgs
       tags: [Orgs]
       summary: List organizations (platform-wide)
-      description: Super admin only.
+      description: Super admin only. Returns a paginated list of all organizations on the platform.
       x-permissions: ["platform:orgs:read"]
       parameters:
         - $ref: "#/components/parameters/Page"
@@ -126,11 +169,15 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/PagedOrgs" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
 
   /orgs/{orgId}:
     get:
+      operationId: getOrg
       tags: [Orgs]
       summary: Get org details
+      description: Returns the details of a single organization.
       x-permissions: ["org:read"]
       x-org-scope: "{orgId}"
       parameters:
@@ -141,9 +188,14 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Org" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
     patch:
+      operationId: updateOrg
       tags: [Orgs]
       summary: Update org details
+      description: Partially updates an organization's profile fields.
       x-permissions: ["org:manage"]
       x-org-scope: "{orgId}"
       parameters:
@@ -159,11 +211,17 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Org" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/settings:
     get:
+      operationId: getOrgSettings
       tags: [Orgs]
       summary: Read org settings
+      description: Returns the settings for an organization (join policies, default roles, etc.).
       x-permissions: ["org:manage"]
       x-org-scope: "{orgId}"
       parameters:
@@ -174,9 +232,14 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/OrgSettings" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
     patch:
+      operationId: updateOrgSettings
       tags: [Orgs]
       summary: Update org settings
+      description: Partially updates the organization's settings.
       x-permissions: ["org:manage"]
       x-org-scope: "{orgId}"
       parameters:
@@ -192,11 +255,17 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/OrgSettings" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/members:
     get:
+      operationId: listOrgMembers
       tags: [Org Members]
       summary: List org members (staff)
+      description: Returns a paginated list of staff members for the organization.
       x-permissions: ["org:members:read"]
       x-org-scope: "{orgId}"
       parameters:
@@ -210,11 +279,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/PagedOrgMembers" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/members/{memberId}:
     get:
+      operationId: getOrgMember
       tags: [Org Members]
       summary: Get membership record (role, status)
+      description: Returns the membership details for a specific staff member.
       x-permissions: ["org:members:read"]
       x-org-scope: "{orgId}"
       parameters:
@@ -226,9 +300,14 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/OrgMember" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
     patch:
+      operationId: updateOrgMember
       tags: [Org Members]
       summary: Update membership record (e.g., role/admin)
+      description: Updates a member's role or status within the organization.
       x-permissions: ["org:members:manage"]
       x-org-scope: "{orgId}"
       parameters:
@@ -245,11 +324,17 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/OrgMember" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/membership-requests:
     post:
+      operationId: createMembershipRequest
       tags: [Requests]
       summary: Request to join org (or admin invite)
+      description: Submits a request for a user to join an organization, or an admin invite on behalf of a user.
       x-permissions: ["org:membership:request"]
       parameters:
         - $ref: "#/components/parameters/OrgId"
@@ -264,9 +349,19 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/MembershipRequest" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409":
+          description: A pending request already exists for this user and org
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
     get:
+      operationId: listMembershipRequests
       tags: [Requests]
       summary: List membership requests for org (admin review)
+      description: Returns pending, approved, and rejected membership requests for admin review.
       x-permissions: ["org:members:manage"]
       x-org-scope: "{orgId}"
       parameters:
@@ -279,11 +374,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/PagedMembershipRequests" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/membership-requests/{requestId}/approve:
     post:
+      operationId: approveMembershipRequest
       tags: [Requests]
       summary: Approve membership request
+      description: Approves a pending membership request, creating the org member record.
       x-permissions: ["org:members:manage"]
       x-org-scope: "{orgId}"
       parameters:
@@ -295,11 +395,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/OrgMember" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/membership-requests/{requestId}/reject:
     post:
+      operationId: rejectMembershipRequest
       tags: [Requests]
       summary: Reject membership request
+      description: Rejects a pending membership request.
       x-permissions: ["org:members:manage"]
       x-org-scope: "{orgId}"
       parameters:
@@ -307,11 +412,16 @@ paths:
         - $ref: "#/components/parameters/RequestId"
       responses:
         "204": { description: No Content }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/learners:
     get:
+      operationId: listOrgLearners
       tags: [Org Learners]
       summary: List learners affiliated with org
+      description: Returns a paginated list of learners provisioned in this organization.
       x-permissions: ["org:learners:read"]
       x-org-scope: "{orgId}"
       parameters:
@@ -325,9 +435,14 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/PagedOrgLearners" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
     post:
+      operationId: createOrgLearner
       tags: [Org Learners]
       summary: Provision a learner in this org
+      description: Creates a new learner record affiliated with this organization.
       x-permissions: ["org:learners:manage"]
       x-org-scope: "{orgId}"
       parameters:
@@ -343,11 +458,17 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/OrgLearner" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/learners:bulk-import:
     post:
+      operationId: bulkImportOrgLearners
       tags: [Org Learners]
       summary: Bulk import learners for org
+      description: Accepts a batch of learner records and queues them for import.
       x-permissions: ["org:learners:manage"]
       x-org-scope: "{orgId}"
       parameters:
@@ -363,11 +484,17 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ImportJob" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/learners/{learnerId}:
     get:
+      operationId: getOrgLearner
       tags: [Org Learners]
-      summary: Get learner details as it pertains to this org (includes badge progress/issuances for this org)
+      summary: Get learner details as it pertains to this org
+      description: Returns learner details including badge progress and issuances scoped to this organization.
       x-permissions: ["org:learners:read"]
       x-org-scope: "{orgId}"
       parameters:
@@ -379,11 +506,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/OrgLearnerDetail" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/learners/{learnerId}/badges/{badgeId}:
     get:
+      operationId: getOrgLearnerBadgeProgress
       tags: [Org Learners, Badges]
       summary: Get learner progress toward badge (org-scoped)
+      description: Returns the learner's progress on a specific badge within this organization.
       x-permissions: ["org:badges:track"]
       x-org-scope: "{orgId}"
       parameters:
@@ -396,9 +528,14 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/BadgeProgress" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
     patch:
+      operationId: updateOrgLearnerBadgeProgress
       tags: [Org Learners, Badges]
       summary: Update learner progress toward badge (org-scoped)
+      description: Updates the learner's progress on a badge, such as marking criteria complete.
       x-permissions: ["org:badges:track"]
       x-org-scope: "{orgId}"
       parameters:
@@ -416,11 +553,17 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/BadgeProgress" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/issuances:
     post:
+      operationId: createIssuance
       tags: [Issuances]
       summary: Issue a badge to a learner (creates Assertion)
+      description: Issues a badge to a learner, creating a verifiable assertion record.
       x-permissions: ["org:badges:issue"]
       x-org-scope: "{orgId}"
       parameters:
@@ -436,9 +579,15 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Issuance" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
     get:
+      operationId: listIssuances
       tags: [Issuances]
       summary: List issuances for org
+      description: Returns a paginated list of badge issuances for this organization, with optional filters.
       x-permissions: ["org:badges:read"]
       x-org-scope: "{orgId}"
       parameters:
@@ -448,23 +597,31 @@ paths:
         - name: learnerId
           in: query
           schema: { type: string }
+          description: Filter issuances by learner.
         - name: badgeId
           in: query
           schema: { type: string }
+          description: Filter issuances by badge.
         - name: status
           in: query
           schema: { type: string, enum: [issued, revoked] }
+          description: Filter by issuance status.
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema: { $ref: "#/components/schemas/PagedIssuances" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/cohorts:
     get:
+      operationId: listCohorts
       tags: [Cohorts]
       summary: List cohorts
+      description: Returns a paginated list of cohorts for this organization.
       x-permissions: ["org:cohorts:read"]
       x-org-scope: "{orgId}"
       parameters:
@@ -478,9 +635,14 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/PagedCohorts" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
     post:
+      operationId: createCohort
       tags: [Cohorts]
       summary: Create cohort
+      description: Creates a new learner cohort within the organization.
       x-permissions: ["org:cohorts:manage"]
       x-org-scope: "{orgId}"
       parameters:
@@ -496,11 +658,17 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Cohort" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/cohorts/{cohortId}:
     get:
+      operationId: getCohort
       tags: [Cohorts]
       summary: Get cohort details (including learner constituents)
+      description: Returns full cohort details including the list of learners in this cohort.
       x-permissions: ["org:cohorts:read"]
       x-org-scope: "{orgId}"
       parameters:
@@ -512,9 +680,14 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/CohortDetail" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
     patch:
+      operationId: updateCohort
       tags: [Cohorts]
       summary: Update cohort
+      description: Partially updates a cohort's name or description.
       x-permissions: ["org:cohorts:manage"]
       x-org-scope: "{orgId}"
       parameters:
@@ -531,9 +704,15 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Cohort" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
     delete:
+      operationId: deleteCohort
       tags: [Cohorts]
       summary: Delete cohort
+      description: Permanently deletes a cohort. Learners are not removed from the organization.
       x-permissions: ["org:cohorts:manage"]
       x-org-scope: "{orgId}"
       parameters:
@@ -541,11 +720,16 @@ paths:
         - $ref: "#/components/parameters/CohortId"
       responses:
         "204": { description: No Content }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/cohorts/{cohortId}/learners:
     post:
+      operationId: addCohortLearners
       tags: [Cohorts]
       summary: Add learners to cohort (batch)
+      description: Adds one or more learners to a cohort by their IDs.
       x-permissions: ["org:cohorts:manage"]
       x-org-scope: "{orgId}"
       parameters:
@@ -562,11 +746,17 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/CohortDetail" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /orgs/{orgId}/cohorts/{cohortId}/learners/{learnerId}:
     delete:
+      operationId: removeCohortLearner
       tags: [Cohorts]
       summary: Remove learner from cohort
+      description: Removes a single learner from a cohort.
       x-permissions: ["org:cohorts:manage"]
       x-org-scope: "{orgId}"
       parameters:
@@ -575,11 +765,16 @@ paths:
         - $ref: "#/components/parameters/LearnerId"
       responses:
         "204": { description: No Content }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /users:
     get:
+      operationId: listUsers
       tags: [Users]
       summary: List users (platform-wide)
+      description: Super admin only. Returns a paginated list of all user accounts.
       x-permissions: ["platform:users:read"]
       parameters:
         - $ref: "#/components/parameters/Page"
@@ -591,11 +786,15 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/PagedUsers" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
 
   /users/{userId}:
     get:
+      operationId: getUser
       tags: [Users]
       summary: Get user details (profile)
+      description: Returns the user's profile information.
       x-permissions: ["user:read"]
       parameters:
         - $ref: "#/components/parameters/UserId"
@@ -605,11 +804,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/User" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /users/{userId}/settings:
     get:
+      operationId: getUserSettings
       tags: [Users]
       summary: Get user settings
+      description: Returns the user's preferences (locale, marketing opt-in, etc.).
       x-permissions: ["user:settings:read"]
       parameters:
         - $ref: "#/components/parameters/UserId"
@@ -619,9 +823,14 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/UserSettings" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
     patch:
+      operationId: updateUserSettings
       tags: [Users]
       summary: Update user settings
+      description: Partially updates the user's preferences.
       x-permissions: ["user:settings:write"]
       parameters:
         - $ref: "#/components/parameters/UserId"
@@ -636,11 +845,17 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/UserSettings" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /learners:
     get:
+      operationId: listLearners
       tags: [Org Learners]
       summary: List learners (platform-wide)
+      description: Super admin only. Returns a paginated list of all learner records.
       x-permissions: ["platform:learners:read"]
       parameters:
         - $ref: "#/components/parameters/Page"
@@ -652,11 +867,15 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/PagedLearners" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
 
   /learners/{learnerId}:
     get:
+      operationId: getLearner
       tags: [Org Learners]
       summary: Get learner details (global)
+      description: Returns a learner's global profile, independent of any organization.
       x-permissions: ["learner:read"]
       parameters:
         - $ref: "#/components/parameters/LearnerId"
@@ -666,11 +885,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Learner" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /learners/{learnerId}/badges:
     get:
+      operationId: listLearnerBadges
       tags: [Badges]
       summary: List badges earned or in progress (global aggregation)
+      description: Returns a paginated list of all badges a learner has earned or is working toward across all orgs.
       x-permissions: ["learner:badges:read"]
       parameters:
         - $ref: "#/components/parameters/LearnerId"
@@ -682,11 +906,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/PagedLearnerBadges" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /learners/{learnerId}/badges/{badgeId}:
     get:
+      operationId: getLearnerBadgeJourney
       tags: [Badges]
-      summary: Learner journey for a specific badge (global; used for shareable certificate page once earned)
+      summary: Learner journey for a specific badge
+      description: Returns the learner's full journey for a badge — progress across orgs, and any assertions earned. Used for shareable certificate pages.
       x-permissions: ["learner:badges:read"]
       parameters:
         - $ref: "#/components/parameters/LearnerId"
@@ -697,11 +926,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/LearnerBadgeJourney" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /badges:
     get:
+      operationId: listBadges
       tags: [Badges]
       summary: List badges
+      description: Returns a paginated list of badge definitions, optionally filtered by creating org.
       x-permissions: ["badges:read"]
       parameters:
         - $ref: "#/components/parameters/Page"
@@ -717,9 +951,13 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/PagedBadges" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
     post:
+      operationId: createBadge
       tags: [Badges]
       summary: Create a badge
+      description: Creates a new badge definition with optional criteria.
       x-permissions: ["badges:create"]
       requestBody:
         required: true
@@ -732,11 +970,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Badge" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
 
   /badges/{badgeId}:
     get:
+      operationId: getBadge
       tags: [Badges]
       summary: Get badge details (Open Badges-aligned)
+      description: Returns the full badge definition including criteria.
       x-permissions: ["badges:read"]
       parameters:
         - $ref: "#/components/parameters/BadgeId"
@@ -746,9 +989,14 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Badge" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
     patch:
+      operationId: updateBadge
       tags: [Badges]
       summary: Update badge
+      description: Partially updates a badge's name, description, image, or criteria.
       x-permissions: ["badges:update"]
       parameters:
         - $ref: "#/components/parameters/BadgeId"
@@ -763,19 +1011,30 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Badge" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
     delete:
+      operationId: deleteBadge
       tags: [Badges]
       summary: Delete badge
+      description: Permanently deletes a badge definition. Existing issuances are not affected.
       x-permissions: ["badges:delete"]
       parameters:
         - $ref: "#/components/parameters/BadgeId"
       responses:
         "204": { description: No Content }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /collections:
     get:
+      operationId: listCollections
       tags: [Collections]
       summary: List collections
+      description: Returns a paginated list of badge collections.
       x-permissions: ["collections:read"]
       parameters:
         - $ref: "#/components/parameters/Page"
@@ -787,9 +1046,13 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/PagedCollections" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
     post:
+      operationId: createCollection
       tags: [Collections]
       summary: Create collection
+      description: Creates a new collection of badges.
       x-permissions: ["collections:create"]
       requestBody:
         required: true
@@ -802,11 +1065,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Collection" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
 
   /collections/{collectionId}:
     get:
+      operationId: getCollection
       tags: [Collections]
       summary: Get collection details (includes some badge details)
+      description: Returns the collection and summaries of the badges it contains.
       x-permissions: ["collections:read"]
       parameters:
         - $ref: "#/components/parameters/CollectionId"
@@ -816,9 +1084,14 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/CollectionDetail" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
     patch:
+      operationId: updateCollection
       tags: [Collections]
       summary: Update collection (including add/remove badges)
+      description: Partially updates a collection's metadata and/or its badge membership.
       x-permissions: ["collections:update"]
       parameters:
         - $ref: "#/components/parameters/CollectionId"
@@ -833,20 +1106,31 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/CollectionDetail" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
     delete:
+      operationId: deleteCollection
       tags: [Collections]
       summary: Delete collection
+      description: Permanently deletes a collection. Badges within it are not deleted.
       x-permissions: ["collections:delete"]
       parameters:
         - $ref: "#/components/parameters/CollectionId"
       responses:
         "204": { description: No Content }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /registry/collections:
     get:
+      operationId: browseRegistry
       tags: [Registry]
       summary: Browse published collections in registry
-      security: []  # typically public browsing
+      description: Public browsing of published collections. No authentication required.
+      security: []
       parameters:
         - $ref: "#/components/parameters/Page"
         - $ref: "#/components/parameters/PageSize"
@@ -860,8 +1144,10 @@ paths:
 
   /collections/{collectionId}/publish:
     post:
+      operationId: publishCollection
       tags: [Registry]
       summary: Publish a collection to registry
+      description: Makes a collection visible in the public registry.
       x-permissions: ["collections:publish"]
       parameters:
         - $ref: "#/components/parameters/CollectionId"
@@ -871,11 +1157,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/CollectionDetail" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /collections/{collectionId}/unpublish:
     post:
+      operationId: unpublishCollection
       tags: [Registry]
       summary: Unpublish a collection from registry
+      description: Removes a collection from the public registry.
       x-permissions: ["collections:publish"]
       parameters:
         - $ref: "#/components/parameters/CollectionId"
@@ -885,11 +1176,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/CollectionDetail" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /collections/{collectionId}/issue-authorizations:
     post:
+      operationId: requestIssueAuthorization
       tags: [Requests]
       summary: Request authorization for an org to issue a collection
+      description: An org requests permission from the collection creator to issue its badges.
       x-permissions: ["org:issue-auth:request"]
       parameters:
         - $ref: "#/components/parameters/CollectionId"
@@ -904,9 +1200,20 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/IssueAuthorizationRequest" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: A pending authorization request already exists for this org and collection
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
     get:
+      operationId: listIssueAuthorizations
       tags: [Requests]
       summary: List authorization requests for this collection (creator review)
+      description: Returns authorization requests for the collection, for the creator to review.
       x-permissions: ["collections:authorize:manage"]
       parameters:
         - $ref: "#/components/parameters/CollectionId"
@@ -918,11 +1225,16 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/PagedIssueAuthorizationRequests" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /issue-authorizations/{authRequestId}/approve:
     post:
+      operationId: approveIssueAuthorization
       tags: [Requests]
       summary: Approve issue authorization request
+      description: Grants an org the authorization to issue badges from the collection.
       x-permissions: ["collections:authorize:manage"]
       parameters:
         - $ref: "#/components/parameters/AuthRequestId"
@@ -932,21 +1244,31 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/IssueAuthorization" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /issue-authorizations/{authRequestId}/reject:
     post:
+      operationId: rejectIssueAuthorization
       tags: [Requests]
       summary: Reject issue authorization request
+      description: Denies an org's request to issue badges from the collection.
       x-permissions: ["collections:authorize:manage"]
       parameters:
         - $ref: "#/components/parameters/AuthRequestId"
       responses:
         "204": { description: No Content }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   /public/assertions/{assertionId}:
     get:
+      operationId: getPublicAssertion
       tags: [Public]
       summary: Public verification payload for an issued badge (Assertion)
+      description: Returns the publicly verifiable assertion data for an issued badge. No authentication required.
       security: []
       parameters:
         - $ref: "#/components/parameters/AssertionId"
@@ -956,6 +1278,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Assertion" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
 components:
   securitySchemes:
@@ -964,14 +1287,38 @@ components:
       scheme: bearer
       bearerFormat: JWT
 
+  responses:
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Unauthorized:
+      description: Missing or invalid authentication token
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+
   parameters:
     Page:
       name: page
       in: query
+      description: Page number (1-indexed).
       schema: { type: integer, minimum: 1, default: 1 }
     PageSize:
       name: pageSize
       in: query
+      description: Number of items per page.
       schema: { type: integer, minimum: 1, maximum: 200, default: 25 }
     Query:
       name: q
@@ -982,117 +1329,199 @@ components:
       name: orgId
       in: path
       required: true
-      schema: { type: string }
+      description: Organization ID.
+      schema: { type: string, example: "org_abc123" }
     CohortId:
-      name: CohortId
+      name: cohortId
       in: path
       required: true
-      schema: { type: string }
+      description: Cohort ID.
+      schema: { type: string, example: "coh_abc123" }
     MemberId:
       name: memberId
       in: path
       required: true
-      schema: { type: string }
+      description: Org member ID.
+      schema: { type: string, example: "mem_abc123" }
     UserId:
       name: userId
       in: path
       required: true
-      schema: { type: string }
+      description: User ID.
+      schema: { type: string, example: "usr_abc123" }
     LearnerId:
       name: learnerId
       in: path
       required: true
-      schema: { type: string }
+      description: Learner ID.
+      schema: { type: string, example: "lrn_abc123" }
     BadgeId:
       name: badgeId
       in: path
       required: true
-      schema: { type: string }
+      description: Badge ID.
+      schema: { type: string, example: "bdg_abc123" }
     CollectionId:
       name: collectionId
       in: path
       required: true
-      schema: { type: string }
+      description: Collection ID.
+      schema: { type: string, example: "col_abc123" }
     RequestId:
       name: requestId
       in: path
       required: true
-      schema: { type: string }
+      description: Membership request ID.
+      schema: { type: string, example: "req_abc123" }
     AuthRequestId:
       name: authRequestId
       in: path
       required: true
-      schema: { type: string }
+      description: Issue authorization request ID.
+      schema: { type: string, example: "iar_abc123" }
     AssertionId:
       name: assertionId
       in: path
       required: true
-      schema: { type: string }
+      description: Public assertion ID.
+      schema: { type: string, example: "ast_abc123" }
 
   schemas:
     # ---------- Common ----------
     ISODateTime:
       type: string
       format: date-time
+      description: ISO 8601 date-time string.
+      example: "2025-06-15T10:30:00Z"
 
     PagedMeta:
       type: object
+      description: Pagination metadata included in all list responses.
       properties:
-        page: { type: integer }
-        pageSize: { type: integer }
-        total: { type: integer }
+        page: { type: integer, description: "Current page number.", example: 1 }
+        pageSize: { type: integer, description: "Items per page.", example: 25 }
+        total: { type: integer, description: "Total number of items.", example: 42 }
       required: [page, pageSize, total]
+
+    ErrorResponse:
+      type: object
+      description: Standard error envelope returned for all non-2xx responses.
+      properties:
+        message:
+          type: string
+          description: Human-readable error message.
+          example: "Validation failed"
+        code:
+          type: string
+          description: Machine-readable error code for programmatic handling.
+          example: "VALIDATION_ERROR"
+      required: [message]
 
     # ---------- Auth ----------
     RegisterRequest:
       type: object
+      description: Payload for user registration.
       properties:
-        email: { type: string, format: email }
-        password: { type: string, minLength: 8 }
-        name: { type: string }
+        email:
+          type: string
+          format: email
+          description: User's email address. Must be unique.
+          example: "jane@example.com"
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          description: Account password.
+          example: "s3cureP@ss"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: User's display name.
+          example: "Jane Doe"
       required: [email, password]
 
     LoginRequest:
       type: object
+      description: Payload for user login.
       properties:
-        email: { type: string, format: email }
-        password: { type: string }
+        email:
+          type: string
+          format: email
+          description: Registered email address.
+          example: "jane@example.com"
+        password:
+          type: string
+          description: Account password.
+          example: "s3cureP@ss"
       required: [email, password]
 
     RefreshRequest:
       type: object
+      description: Payload for token refresh.
       properties:
-        refreshToken: { type: string }
+        refreshToken:
+          type: string
+          description: The refresh token issued during login or a previous refresh.
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
       required: [refreshToken]
 
     AuthResponse:
       type: object
+      description: Returned on successful authentication (login, register, or refresh).
       properties:
-        accessToken: { type: string, description: "JWT access token" }
-        refreshToken: { type: string }
+        accessToken:
+          type: string
+          description: Short-lived JWT access token for API authorization.
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refreshToken:
+          type: string
+          description: Long-lived refresh token for obtaining new access tokens.
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
         user: { $ref: "#/components/schemas/User" }
       required: [accessToken, user]
 
     # ---------- Users ----------
     User:
       type: object
+      description: A platform user account.
       properties:
-        id: { type: string }
-        email: { type: string, format: email }
-        name: { type: string }
+        id:
+          type: string
+          description: Unique user identifier.
+          example: "usr_abc123"
+        email:
+          type: string
+          format: email
+          description: User's email address.
+          example: "jane@example.com"
+        name:
+          type: string
+          description: User's display name.
+          example: "Jane Doe"
         createdAt: { $ref: "#/components/schemas/ISODateTime" }
       required: [id, email]
 
     UserSettings:
       type: object
+      description: Per-user preference settings.
       properties:
-        locale: { type: string, default: "en-US" }
-        marketingEmails: { type: boolean, default: false }
+        locale:
+          type: string
+          description: Preferred locale for the UI.
+          default: "en-US"
+          example: "en-US"
+        marketingEmails:
+          type: boolean
+          description: Whether the user has opted in to marketing emails.
+          default: false
+          example: false
 
     UserSettingsUpdateRequest:
       type: object
+      description: Partial update for user settings.
       properties:
-        locale: { type: string }
+        locale: { type: string, example: "fr-FR" }
         marketingEmails: { type: boolean }
 
     PagedUsers:
@@ -1107,41 +1536,89 @@ components:
     # ---------- Orgs ----------
     Org:
       type: object
+      description: An organization that manages staff, learners, and badge issuance.
       properties:
-        id: { type: string }
-        name: { type: string }
-        about: { type: string }
-        imageUrl: { type: string, format: uri }
-        contactEmail: { type: string, format: email }
+        id:
+          type: string
+          description: Unique organization identifier.
+          example: "org_abc123"
+        name:
+          type: string
+          description: Organization display name.
+          example: "Acme Training Co."
+        about:
+          type: string
+          description: Short description or bio for the organization.
+          example: "We provide industry-leading professional development."
+        imageUrl:
+          type: string
+          format: uri
+          description: URL to the organization's logo or avatar image.
+          example: "https://cdn.example.com/orgs/acme-logo.png"
+        contactEmail:
+          type: string
+          format: email
+          description: Public contact email for the organization.
+          example: "contact@acme.com"
         createdAt: { $ref: "#/components/schemas/ISODateTime" }
+        updatedAt: { $ref: "#/components/schemas/ISODateTime" }
       required: [id, name]
 
     OrgCreateRequest:
       type: object
+      description: Payload for creating an organization.
       properties:
-        name: { type: string }
-        about: { type: string }
-        contactEmail: { type: string, format: email }
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Organization name.
+          example: "Acme Training Co."
+        about:
+          type: string
+          maxLength: 2000
+          description: Short description of the organization.
+          example: "We provide industry-leading professional development."
+        contactEmail:
+          type: string
+          format: email
+          description: Public contact email.
+          example: "contact@acme.com"
       required: [name]
 
     OrgUpdateRequest:
       type: object
+      description: Partial update for an organization's profile.
       properties:
-        name: { type: string }
-        about: { type: string }
+        name: { type: string, minLength: 1, maxLength: 255 }
+        about: { type: string, maxLength: 2000 }
         imageUrl: { type: string, format: uri }
         contactEmail: { type: string, format: email }
 
     OrgSettings:
       type: object
+      description: Organization-level settings controlling membership policies.
       properties:
-        allowSelfJoin: { type: boolean, default: false }
-        requireAdminApprovalForJoin: { type: boolean, default: true }
-        defaultMemberRole: { type: string, default: "issuer" }
+        allowSelfJoin:
+          type: boolean
+          default: false
+          description: Whether users can join this org without an invite.
+          example: false
+        requireAdminApprovalForJoin:
+          type: boolean
+          default: true
+          description: Whether join requests require admin approval.
+          example: true
+        defaultMemberRole:
+          type: string
+          default: "issuer"
+          description: Default role assigned to new members.
+          example: "issuer"
       required: [allowSelfJoin, requireAdminApprovalForJoin]
 
     OrgSettingsUpdateRequest:
       type: object
+      description: Partial update for organization settings.
       properties:
         allowSelfJoin: { type: boolean }
         requireAdminApprovalForJoin: { type: boolean }
@@ -1159,21 +1636,36 @@ components:
     # ---------- Org Members ----------
     OrgMember:
       type: object
+      description: A staff membership record linking a user to an organization with a specific role.
       properties:
-        id: { type: string }
-        orgId: { type: string }
-        userId: { type: string }
+        id:
+          type: string
+          description: Unique membership record identifier.
+          example: "mem_abc123"
+        orgId:
+          type: string
+          description: The organization this membership belongs to.
+          example: "org_abc123"
+        userId:
+          type: string
+          description: The user who holds this membership.
+          example: "usr_abc123"
         role:
           type: string
           enum: [owner, admin, issuer, viewer]
+          description: The member's role within the org.
+          example: "admin"
         status:
           type: string
           enum: [active, invited, suspended]
+          description: Current membership status.
+          example: "active"
         createdAt: { $ref: "#/components/schemas/ISODateTime" }
       required: [id, orgId, userId, role, status]
 
     OrgMemberUpdateRequest:
       type: object
+      description: Partial update for a membership record.
       properties:
         role:
           type: string
@@ -1194,22 +1686,44 @@ components:
     # ---------- Membership Requests ----------
     MembershipRequestCreate:
       type: object
+      description: Payload for creating a membership request (self-join or admin invite).
       properties:
         userId:
           type: string
-          description: "If omitted, request is for current user."
-        message: { type: string }
+          description: Target user ID. If omitted, the request is for the authenticated user.
+          example: "usr_abc123"
+        message:
+          type: string
+          maxLength: 1000
+          description: Optional message from the requester.
+          example: "I'd like to join your organization to help issue badges."
       additionalProperties: false
 
     MembershipRequest:
       type: object
+      description: A request for a user to become a member of an organization.
       properties:
-        id: { type: string }
-        orgId: { type: string }
-        userId: { type: string }
+        id:
+          type: string
+          description: Unique request identifier.
+          example: "req_abc123"
+        orgId:
+          type: string
+          description: Target organization.
+          example: "org_abc123"
+        userId:
+          type: string
+          description: Requesting user.
+          example: "usr_abc123"
         status:
           type: string
           enum: [pending, approved, rejected, canceled]
+          description: Current request status.
+          example: "pending"
+        message:
+          type: string
+          description: Optional message from the requester.
+          example: "I'd like to join your organization to help issue badges."
         createdAt: { $ref: "#/components/schemas/ISODateTime" }
       required: [id, orgId, userId, status]
 
@@ -1225,43 +1739,88 @@ components:
     # ---------- Learners ----------
     Learner:
       type: object
+      description: A learner's global profile, independent of any organization.
       properties:
-        id: { type: string }
-        name: { type: string }
-        email: { type: string, format: email }
+        id:
+          type: string
+          description: Unique learner identifier.
+          example: "lrn_abc123"
+        name:
+          type: string
+          description: Learner's display name.
+          example: "Alex Rivera"
+        email:
+          type: string
+          format: email
+          description: Learner's email address (may be null for externally provisioned learners).
+          example: "alex@example.com"
         createdAt: { $ref: "#/components/schemas/ISODateTime" }
       required: [id]
 
     OrgLearner:
       type: object
+      description: A learner's affiliation with an organization, including org-specific metadata.
       properties:
-        orgId: { type: string }
-        learnerId: { type: string }
-        externalRef: { type: string, description: "Roster ID / SIS ID" }
+        id:
+          type: string
+          description: Unique org-learner record identifier.
+          example: "olr_abc123"
+        orgId:
+          type: string
+          description: The organization this learner is affiliated with.
+          example: "org_abc123"
+        learnerId:
+          type: string
+          description: The learner's global ID.
+          example: "lrn_abc123"
+        externalRef:
+          type: string
+          description: External reference such as a roster ID or SIS ID.
+          example: "SIS-2025-0042"
         status:
           type: string
           enum: [active, archived]
-      required: [orgId, learnerId, status]
+          description: Whether this learner is active or archived in the org.
+          example: "active"
+        createdAt: { $ref: "#/components/schemas/ISODateTime" }
+      required: [id, orgId, learnerId, status]
 
     OrgLearnerCreateRequest:
       type: object
+      description: Payload for provisioning a learner in an organization.
       properties:
-        name: { type: string }
-        email: { type: string, format: email }
-        externalRef: { type: string }
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Learner's display name.
+          example: "Alex Rivera"
+        email:
+          type: string
+          format: email
+          description: Learner's email address.
+          example: "alex@example.com"
+        externalRef:
+          type: string
+          maxLength: 255
+          description: External roster or SIS identifier.
+          example: "SIS-2025-0042"
       required: [name]
 
     OrgLearnerDetail:
       allOf:
         - $ref: "#/components/schemas/OrgLearner"
         - type: object
+          description: Extended org-learner record with nested learner profile, badge progress, and issuances.
           properties:
             learner: { $ref: "#/components/schemas/Learner" }
             badgeProgress:
               type: array
+              description: Badge progress records for this learner within this org.
               items: { $ref: "#/components/schemas/BadgeProgress" }
             issuances:
               type: array
+              description: Badge issuances for this learner within this org.
               items: { $ref: "#/components/schemas/Issuance" }
 
     PagedLearners:
@@ -1284,61 +1843,134 @@ components:
 
     BulkLearnerImportRequest:
       type: object
+      description: Payload for bulk-importing learners into an organization.
       properties:
         learners:
           type: array
+          description: List of learner records to import.
           items: { $ref: "#/components/schemas/OrgLearnerCreateRequest" }
       required: [learners]
 
     ImportJob:
       type: object
+      description: Status of an asynchronous bulk import job.
       properties:
-        id: { type: string }
-        status: { type: string, enum: [queued, running, complete, failed] }
+        id:
+          type: string
+          description: Unique job identifier.
+          example: "job_abc123"
+        status:
+          type: string
+          enum: [queued, running, complete, failed]
+          description: Current job status.
+          example: "queued"
+        totalCount:
+          type: integer
+          description: Total number of records in the import.
+          example: 150
+        successCount:
+          type: integer
+          description: Number of records successfully imported so far.
+          example: 0
+        errorCount:
+          type: integer
+          description: Number of records that failed to import.
+          example: 0
         createdAt: { $ref: "#/components/schemas/ISODateTime" }
         errors:
           type: array
+          description: Error messages for individual failed records.
           items: { type: string }
+      required: [id, status]
 
     # ---------- Badges ----------
     Badge:
       type: object
+      description: A badge definition including its criteria. Aligned with Open Badges concepts.
       properties:
-        id: { type: string }
-        name: { type: string }
-        description: { type: string }
-        imageUrl: { type: string, format: uri }
+        id:
+          type: string
+          description: Unique badge identifier.
+          example: "bdg_abc123"
+        name:
+          type: string
+          description: Badge display name.
+          example: "Project Management Fundamentals"
+        description:
+          type: string
+          description: Detailed description of what this badge represents.
+          example: "Awarded for demonstrating core project management competencies."
+        imageUrl:
+          type: string
+          format: uri
+          description: URL to the badge image.
+          example: "https://cdn.example.com/badges/pm-fundamentals.png"
         criteria:
           type: array
+          description: List of criteria that must be met to earn this badge.
           items: { $ref: "#/components/schemas/BadgeCriteriaItem" }
-        createdByOrgId: { type: string }
+        createdByOrgId:
+          type: string
+          description: The org that created this badge.
+          example: "org_abc123"
+        createdAt: { $ref: "#/components/schemas/ISODateTime" }
+        updatedAt: { $ref: "#/components/schemas/ISODateTime" }
       required: [id, name]
 
     BadgeCriteriaItem:
       type: object
+      description: A single criterion within a badge definition.
       properties:
-        id: { type: string }
-        label: { type: string }
-        required: { type: boolean, default: true }
+        id:
+          type: string
+          description: Unique criterion identifier.
+          example: "crt_abc123"
+        label:
+          type: string
+          description: Human-readable description of the criterion.
+          example: "Complete the risk assessment module"
+        isRequired:
+          type: boolean
+          default: true
+          description: Whether this criterion is required to earn the badge.
+          example: true
       required: [id, label]
 
     BadgeCreateRequest:
       type: object
+      description: Payload for creating a badge.
       properties:
-        name: { type: string }
-        description: { type: string }
-        imageUrl: { type: string, format: uri }
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Badge name.
+          example: "Project Management Fundamentals"
+        description:
+          type: string
+          maxLength: 2000
+          description: Badge description.
+          example: "Awarded for demonstrating core project management competencies."
+        imageUrl:
+          type: string
+          format: uri
+          description: URL to the badge image.
         criteria:
           type: array
+          description: Initial criteria for the badge.
           items: { $ref: "#/components/schemas/BadgeCriteriaItem" }
-        createdByOrgId: { type: string }
+        createdByOrgId:
+          type: string
+          description: The org creating this badge.
+          example: "org_abc123"
       required: [name, createdByOrgId]
 
     BadgeUpdateRequest:
       type: object
+      description: Partial update for a badge definition.
       properties:
-        name: { type: string }
-        description: { type: string }
+        name: { type: string, minLength: 1, maxLength: 255 }
+        description: { type: string, maxLength: 2000 }
         imageUrl: { type: string, format: uri }
         criteria:
           type: array
@@ -1356,21 +1988,36 @@ components:
     # ---------- Progress ----------
     BadgeProgress:
       type: object
+      description: Tracks a learner's progress toward earning a badge within a specific org.
       properties:
-        orgId: { type: string }
-        learnerId: { type: string }
-        badgeId: { type: string }
+        orgId:
+          type: string
+          description: The org in which this progress is tracked.
+          example: "org_abc123"
+        learnerId:
+          type: string
+          description: The learner this progress belongs to.
+          example: "lrn_abc123"
+        badgeId:
+          type: string
+          description: The badge being worked toward.
+          example: "bdg_abc123"
         status:
           type: string
           enum: [not_started, in_progress, complete]
+          description: Current progress status.
+          example: "in_progress"
         completedCriteriaIds:
           type: array
+          description: IDs of criteria the learner has completed.
           items: { type: string }
+          example: ["crt_001", "crt_002"]
         updatedAt: { $ref: "#/components/schemas/ISODateTime" }
       required: [orgId, learnerId, badgeId, status]
 
     BadgeProgressUpdateRequest:
       type: object
+      description: Partial update for a learner's badge progress.
       properties:
         status:
           type: string
@@ -1382,23 +2029,59 @@ components:
     # ---------- Issuances / Assertions ----------
     IssuanceCreateRequest:
       type: object
+      description: Payload for issuing a badge to a learner.
       properties:
-        learnerId: { type: string }
-        badgeId: { type: string }
-        evidenceUrl: { type: string, format: uri }
+        learnerId:
+          type: string
+          description: The learner receiving the badge.
+          example: "lrn_abc123"
+        badgeId:
+          type: string
+          description: The badge being issued.
+          example: "bdg_abc123"
+        evidenceUrl:
+          type: string
+          format: uri
+          description: Optional URL to supporting evidence.
+          example: "https://example.com/evidence/portfolio-2025"
       required: [learnerId, badgeId]
 
     Issuance:
       type: object
+      description: Record of a badge being issued to a learner by an org.
       properties:
-        id: { type: string }
-        orgId: { type: string }
-        learnerId: { type: string }
-        badgeId: { type: string }
-        assertionId: { type: string }
-        status: { type: string, enum: [issued, revoked] }
+        id:
+          type: string
+          description: Unique issuance identifier.
+          example: "iss_abc123"
+        orgId:
+          type: string
+          description: The org that issued the badge.
+          example: "org_abc123"
+        learnerId:
+          type: string
+          description: The learner who received the badge.
+          example: "lrn_abc123"
+        badgeId:
+          type: string
+          description: The badge that was issued.
+          example: "bdg_abc123"
+        assertionId:
+          type: string
+          description: The public assertion ID for verification.
+          example: "ast_abc123"
+        status:
+          type: string
+          enum: [issued, revoked]
+          description: Current issuance status.
+          example: "issued"
         issuedAt: { $ref: "#/components/schemas/ISODateTime" }
-      required: [id, orgId, learnerId, badgeId, assertionId, status]
+        revokedAt:
+          description: When the issuance was revoked, if applicable.
+          oneOf:
+            - { $ref: "#/components/schemas/ISODateTime" }
+            - type: "null"
+      required: [id, orgId, learnerId, badgeId, assertionId, status, issuedAt]
 
     PagedIssuances:
       type: object
@@ -1411,27 +2094,49 @@ components:
 
     Assertion:
       type: object
-      description: "Public verification payload (Open Badges-aligned in later iterations)."
+      description: Public verification payload for an issued badge, aligned with Open Badges concepts.
       properties:
-        id: { type: string }
-        issuerOrgId: { type: string }
-        recipientLearnerId: { type: string }
-        badgeId: { type: string }
+        id:
+          type: string
+          description: Unique assertion identifier.
+          example: "ast_abc123"
+        issuerOrgId:
+          type: string
+          description: The org that issued the badge.
+          example: "org_abc123"
+        recipientLearnerId:
+          type: string
+          description: The learner who earned the badge.
+          example: "lrn_abc123"
+        badgeId:
+          type: string
+          description: The badge that was earned.
+          example: "bdg_abc123"
         issuedAt: { $ref: "#/components/schemas/ISODateTime" }
-        evidenceUrl: { type: string, format: uri }
+        evidenceUrl:
+          type: string
+          format: uri
+          description: Optional URL to supporting evidence.
+          example: "https://example.com/evidence/portfolio-2025"
       required: [id, issuerOrgId, recipientLearnerId, badgeId, issuedAt]
 
     # ---------- Learner Badge View ----------
     LearnerBadgeJourney:
       type: object
+      description: A learner's full journey for a specific badge across all orgs.
       properties:
-        learnerId: { type: string }
+        learnerId:
+          type: string
+          description: The learner.
+          example: "lrn_abc123"
         badge: { $ref: "#/components/schemas/Badge" }
         progressByOrg:
           type: array
+          description: Progress records from each org tracking this badge.
           items: { $ref: "#/components/schemas/BadgeProgress" }
         assertions:
           type: array
+          description: Assertions earned for this badge.
           items: { $ref: "#/components/schemas/Assertion" }
       required: [learnerId, badge]
 
@@ -1447,50 +2152,95 @@ components:
     # ---------- Collections ----------
     Collection:
       type: object
+      description: A curated group of badges, optionally published to the public registry.
       properties:
-        id: { type: string }
-        name: { type: string }
-        description: { type: string }
-        createdByOrgId: { type: string }
-        published: { type: boolean, default: false }
+        id:
+          type: string
+          description: Unique collection identifier.
+          example: "col_abc123"
+        name:
+          type: string
+          description: Collection display name.
+          example: "Leadership Development Program"
+        description:
+          type: string
+          description: Description of the collection's purpose.
+          example: "A series of badges covering leadership competencies."
+        createdByOrgId:
+          type: string
+          description: The org that created this collection.
+          example: "org_abc123"
+        published:
+          type: boolean
+          default: false
+          description: Whether this collection is visible in the public registry.
+          example: false
+        createdAt: { $ref: "#/components/schemas/ISODateTime" }
+        updatedAt: { $ref: "#/components/schemas/ISODateTime" }
       required: [id, name, createdByOrgId]
 
     CollectionDetail:
       allOf:
         - $ref: "#/components/schemas/Collection"
         - type: object
+          description: Collection with embedded badge summaries.
           properties:
             badgeSummaries:
               type: array
+              description: Summary of each badge in the collection.
               items:
                 type: object
                 properties:
-                  id: { type: string }
-                  name: { type: string }
-                  imageUrl: { type: string, format: uri }
+                  id:
+                    type: string
+                    example: "bdg_abc123"
+                  name:
+                    type: string
+                    example: "Project Management Fundamentals"
+                  imageUrl:
+                    type: string
+                    format: uri
+                    example: "https://cdn.example.com/badges/pm-fundamentals.png"
                 required: [id, name]
 
     CollectionCreateRequest:
       type: object
+      description: Payload for creating a collection.
       properties:
-        name: { type: string }
-        description: { type: string }
-        createdByOrgId: { type: string }
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Collection name.
+          example: "Leadership Development Program"
+        description:
+          type: string
+          maxLength: 2000
+          description: Collection description.
+          example: "A series of badges covering leadership competencies."
+        createdByOrgId:
+          type: string
+          description: The org creating this collection.
+          example: "org_abc123"
         badgeIds:
           type: array
+          description: Initial badge IDs to include in the collection.
           items: { type: string }
       required: [name, createdByOrgId]
 
     CollectionUpdateRequest:
       type: object
+      description: Partial update for a collection, including adding or removing badges.
       properties:
-        name: { type: string }
-        description: { type: string }
+        name: { type: string, minLength: 1, maxLength: 255 }
+        description: { type: string, maxLength: 2000 }
         addBadgeIds:
           type: array
+          description: Badge IDs to add to the collection.
           items: { type: string }
         removeBadgeIds:
           type: array
+          description: Badge IDs to remove from the collection.
           items: { type: string }
 
     PagedCollections:
@@ -1505,27 +2255,63 @@ components:
     # ---------- Issue Authorization Requests ----------
     IssueAuthorizationRequestCreate:
       type: object
+      description: Payload for requesting authorization to issue badges from a collection.
       properties:
-        requestingOrgId: { type: string }
-        message: { type: string }
+        requestingOrgId:
+          type: string
+          description: The org requesting issuance authorization.
+          example: "org_def456"
+        message:
+          type: string
+          maxLength: 1000
+          description: Optional message explaining the request.
+          example: "We'd like to use your Leadership badges in our program."
       required: [requestingOrgId]
 
     IssueAuthorizationRequest:
       type: object
+      description: A request from an org to be authorized to issue badges from a collection.
       properties:
-        id: { type: string }
-        collectionId: { type: string }
-        requestingOrgId: { type: string }
-        status: { type: string, enum: [pending, approved, rejected] }
+        id:
+          type: string
+          description: Unique request identifier.
+          example: "iar_abc123"
+        collectionId:
+          type: string
+          description: The collection being requested.
+          example: "col_abc123"
+        requestingOrgId:
+          type: string
+          description: The org requesting authorization.
+          example: "org_def456"
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+          description: Current request status.
+          example: "pending"
+        message:
+          type: string
+          description: Optional message from the requester.
+          example: "We'd like to use your Leadership badges in our program."
         createdAt: { $ref: "#/components/schemas/ISODateTime" }
       required: [id, collectionId, requestingOrgId, status]
 
     IssueAuthorization:
       type: object
+      description: A granted authorization for an org to issue badges from a collection.
       properties:
-        id: { type: string }
-        collectionId: { type: string }
-        orgId: { type: string }
+        id:
+          type: string
+          description: Unique authorization identifier.
+          example: "iau_abc123"
+        collectionId:
+          type: string
+          description: The authorized collection.
+          example: "col_abc123"
+        orgId:
+          type: string
+          description: The authorized org.
+          example: "org_def456"
         grantedAt: { $ref: "#/components/schemas/ISODateTime" }
       required: [id, collectionId, orgId]
 
@@ -1541,42 +2327,72 @@ components:
     # ---------- Cohorts ----------
     Cohort:
       type: object
+      description: A named group of learners within an organization.
       properties:
-        id: { type: string }
-        orgId: { type: string }
-        name: { type: string }
-        description: { type: string }
+        id:
+          type: string
+          description: Unique cohort identifier.
+          example: "coh_abc123"
+        orgId:
+          type: string
+          description: The org this cohort belongs to.
+          example: "org_abc123"
+        name:
+          type: string
+          description: Cohort display name.
+          example: "Fall 2025 Cohort"
+        description:
+          type: string
+          description: Optional description of the cohort.
+          example: "Learners enrolled in the Fall 2025 training program."
         createdAt: { $ref: "#/components/schemas/ISODateTime" }
+        updatedAt: { $ref: "#/components/schemas/ISODateTime" }
       required: [id, orgId, name]
 
     CohortDetail:
       allOf:
         - $ref: "#/components/schemas/Cohort"
         - type: object
+          description: Cohort with embedded learner list.
           properties:
             learners:
               type: array
+              description: Learners in this cohort.
               items: { $ref: "#/components/schemas/Learner" }
 
     CohortCreateRequest:
       type: object
+      description: Payload for creating a cohort.
       properties:
-        name: { type: string }
-        description: { type: string }
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Cohort name.
+          example: "Fall 2025 Cohort"
+        description:
+          type: string
+          maxLength: 2000
+          description: Optional description.
+          example: "Learners enrolled in the Fall 2025 training program."
       required: [name]
 
     CohortUpdateRequest:
       type: object
+      description: Partial update for a cohort.
       properties:
-        name: { type: string }
-        description: { type: string }
+        name: { type: string, minLength: 1, maxLength: 255 }
+        description: { type: string, maxLength: 2000 }
 
     CohortLearnersAddRequest:
       type: object
+      description: Payload for adding learners to a cohort.
       properties:
         learnerIds:
           type: array
+          description: List of learner IDs to add.
           items: { type: string }
+          example: ["lrn_abc123", "lrn_def456"]
       required: [learnerIds]
 
     PagedCohorts:
