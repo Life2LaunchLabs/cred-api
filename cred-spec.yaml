@@ -1,0 +1,1589 @@
+openapi: 3.1.0
+info:
+  title: Badging App API (v0)
+  version: 0.1.0
+  description: >
+    v0 OpenAPI spec for org/staff/learner/badge/collection management with JWT auth + RBAC.
+    Auth is enforced by required permissions (vendor extension `x-permissions`) and org-scope checks.
+
+servers:
+  - url: https://api.example.com
+
+tags:
+  - name: Auth
+  - name: Orgs
+  - name: Org Members
+  - name: Org Learners
+  - name: Cohorts
+  - name: Users
+  - name: Badges
+  - name: Collections
+  - name: Registry
+  - name: Requests
+  - name: Issuances
+  - name: Public
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a user account
+      security: []  # public
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login and receive JWT access token
+      security: []  # public
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      security: []  # typically refresh token cookie or separate token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RefreshRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout (invalidate refresh token / session)
+      responses:
+        "204": { description: No Content }
+
+  /auth/createorg:
+    post:
+      tags: [Auth, Orgs]
+      summary: Create a new organization
+      x-permissions: ["org:create"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrgCreateRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Org" }
+
+  /orgs:
+    get:
+      tags: [Orgs]
+      summary: List organizations (platform-wide)
+      description: Super admin only.
+      x-permissions: ["platform:orgs:read"]
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Query"
+        - name: filter
+          in: query
+          schema:
+            type: object
+            additionalProperties: true
+          style: deepObject
+          explode: true
+          description: Optional structured filter (implementation-defined).
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedOrgs" }
+
+  /orgs/{orgId}:
+    get:
+      tags: [Orgs]
+      summary: Get org details
+      x-permissions: ["org:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Org" }
+    patch:
+      tags: [Orgs]
+      summary: Update org details
+      x-permissions: ["org:manage"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrgUpdateRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Org" }
+
+  /orgs/{orgId}/settings:
+    get:
+      tags: [Orgs]
+      summary: Read org settings
+      x-permissions: ["org:manage"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrgSettings" }
+    patch:
+      tags: [Orgs]
+      summary: Update org settings
+      x-permissions: ["org:manage"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrgSettingsUpdateRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrgSettings" }
+
+  /orgs/{orgId}/members:
+    get:
+      tags: [Org Members]
+      summary: List org members (staff)
+      x-permissions: ["org:members:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Query"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedOrgMembers" }
+
+  /orgs/{orgId}/members/{memberId}:
+    get:
+      tags: [Org Members]
+      summary: Get membership record (role, status)
+      x-permissions: ["org:members:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/MemberId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrgMember" }
+    patch:
+      tags: [Org Members]
+      summary: Update membership record (e.g., role/admin)
+      x-permissions: ["org:members:manage"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/MemberId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrgMemberUpdateRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrgMember" }
+
+  /orgs/{orgId}/membership-requests:
+    post:
+      tags: [Requests]
+      summary: Request to join org (or admin invite)
+      x-permissions: ["org:membership:request"]
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MembershipRequestCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MembershipRequest" }
+    get:
+      tags: [Requests]
+      summary: List membership requests for org (admin review)
+      x-permissions: ["org:members:manage"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedMembershipRequests" }
+
+  /orgs/{orgId}/membership-requests/{requestId}/approve:
+    post:
+      tags: [Requests]
+      summary: Approve membership request
+      x-permissions: ["org:members:manage"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrgMember" }
+
+  /orgs/{orgId}/membership-requests/{requestId}/reject:
+    post:
+      tags: [Requests]
+      summary: Reject membership request
+      x-permissions: ["org:members:manage"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "204": { description: No Content }
+
+  /orgs/{orgId}/learners:
+    get:
+      tags: [Org Learners]
+      summary: List learners affiliated with org
+      x-permissions: ["org:learners:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Query"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedOrgLearners" }
+    post:
+      tags: [Org Learners]
+      summary: Provision a learner in this org
+      x-permissions: ["org:learners:manage"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrgLearnerCreateRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrgLearner" }
+
+  /orgs/{orgId}/learners:bulk-import:
+    post:
+      tags: [Org Learners]
+      summary: Bulk import learners for org
+      x-permissions: ["org:learners:manage"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BulkLearnerImportRequest" }
+      responses:
+        "202":
+          description: Accepted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ImportJob" }
+
+  /orgs/{orgId}/learners/{learnerId}:
+    get:
+      tags: [Org Learners]
+      summary: Get learner details as it pertains to this org (includes badge progress/issuances for this org)
+      x-permissions: ["org:learners:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/LearnerId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrgLearnerDetail" }
+
+  /orgs/{orgId}/learners/{learnerId}/badges/{badgeId}:
+    get:
+      tags: [Org Learners, Badges]
+      summary: Get learner progress toward badge (org-scoped)
+      x-permissions: ["org:badges:track"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/LearnerId"
+        - $ref: "#/components/parameters/BadgeId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BadgeProgress" }
+    patch:
+      tags: [Org Learners, Badges]
+      summary: Update learner progress toward badge (org-scoped)
+      x-permissions: ["org:badges:track"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/LearnerId"
+        - $ref: "#/components/parameters/BadgeId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BadgeProgressUpdateRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BadgeProgress" }
+
+  /orgs/{orgId}/issuances:
+    post:
+      tags: [Issuances]
+      summary: Issue a badge to a learner (creates Assertion)
+      x-permissions: ["org:badges:issue"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/IssuanceCreateRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Issuance" }
+    get:
+      tags: [Issuances]
+      summary: List issuances for org
+      x-permissions: ["org:badges:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - name: learnerId
+          in: query
+          schema: { type: string }
+        - name: badgeId
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string, enum: [issued, revoked] }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedIssuances" }
+
+  /orgs/{orgId}/cohorts:
+    get:
+      tags: [Cohorts]
+      summary: List cohorts
+      x-permissions: ["org:cohorts:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Query"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedCohorts" }
+    post:
+      tags: [Cohorts]
+      summary: Create cohort
+      x-permissions: ["org:cohorts:manage"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CohortCreateRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Cohort" }
+
+  /orgs/{orgId}/cohorts/{cohortId}:
+    get:
+      tags: [Cohorts]
+      summary: Get cohort details (including learner constituents)
+      x-permissions: ["org:cohorts:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/CohortId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CohortDetail" }
+    patch:
+      tags: [Cohorts]
+      summary: Update cohort
+      x-permissions: ["org:cohorts:manage"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/CohortId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CohortUpdateRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Cohort" }
+    delete:
+      tags: [Cohorts]
+      summary: Delete cohort
+      x-permissions: ["org:cohorts:manage"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/CohortId"
+      responses:
+        "204": { description: No Content }
+
+  /orgs/{orgId}/cohorts/{cohortId}/learners:
+    post:
+      tags: [Cohorts]
+      summary: Add learners to cohort (batch)
+      x-permissions: ["org:cohorts:manage"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/CohortId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CohortLearnersAddRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CohortDetail" }
+
+  /orgs/{orgId}/cohorts/{cohortId}/learners/{learnerId}:
+    delete:
+      tags: [Cohorts]
+      summary: Remove learner from cohort
+      x-permissions: ["org:cohorts:manage"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/CohortId"
+        - $ref: "#/components/parameters/LearnerId"
+      responses:
+        "204": { description: No Content }
+
+  /users:
+    get:
+      tags: [Users]
+      summary: List users (platform-wide)
+      x-permissions: ["platform:users:read"]
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Query"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedUsers" }
+
+  /users/{userId}:
+    get:
+      tags: [Users]
+      summary: Get user details (profile)
+      x-permissions: ["user:read"]
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+
+  /users/{userId}/settings:
+    get:
+      tags: [Users]
+      summary: Get user settings
+      x-permissions: ["user:settings:read"]
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserSettings" }
+    patch:
+      tags: [Users]
+      summary: Update user settings
+      x-permissions: ["user:settings:write"]
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UserSettingsUpdateRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserSettings" }
+
+  /learners:
+    get:
+      tags: [Org Learners]
+      summary: List learners (platform-wide)
+      x-permissions: ["platform:learners:read"]
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Query"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedLearners" }
+
+  /learners/{learnerId}:
+    get:
+      tags: [Org Learners]
+      summary: Get learner details (global)
+      x-permissions: ["learner:read"]
+      parameters:
+        - $ref: "#/components/parameters/LearnerId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Learner" }
+
+  /learners/{learnerId}/badges:
+    get:
+      tags: [Badges]
+      summary: List badges earned or in progress (global aggregation)
+      x-permissions: ["learner:badges:read"]
+      parameters:
+        - $ref: "#/components/parameters/LearnerId"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedLearnerBadges" }
+
+  /learners/{learnerId}/badges/{badgeId}:
+    get:
+      tags: [Badges]
+      summary: Learner journey for a specific badge (global; used for shareable certificate page once earned)
+      x-permissions: ["learner:badges:read"]
+      parameters:
+        - $ref: "#/components/parameters/LearnerId"
+        - $ref: "#/components/parameters/BadgeId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearnerBadgeJourney" }
+
+  /badges:
+    get:
+      tags: [Badges]
+      summary: List badges
+      x-permissions: ["badges:read"]
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Query"
+        - name: orgId
+          in: query
+          schema: { type: string }
+          description: Filter badges by creator org.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedBadges" }
+    post:
+      tags: [Badges]
+      summary: Create a badge
+      x-permissions: ["badges:create"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BadgeCreateRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Badge" }
+
+  /badges/{badgeId}:
+    get:
+      tags: [Badges]
+      summary: Get badge details (Open Badges-aligned)
+      x-permissions: ["badges:read"]
+      parameters:
+        - $ref: "#/components/parameters/BadgeId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Badge" }
+    patch:
+      tags: [Badges]
+      summary: Update badge
+      x-permissions: ["badges:update"]
+      parameters:
+        - $ref: "#/components/parameters/BadgeId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BadgeUpdateRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Badge" }
+    delete:
+      tags: [Badges]
+      summary: Delete badge
+      x-permissions: ["badges:delete"]
+      parameters:
+        - $ref: "#/components/parameters/BadgeId"
+      responses:
+        "204": { description: No Content }
+
+  /collections:
+    get:
+      tags: [Collections]
+      summary: List collections
+      x-permissions: ["collections:read"]
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Query"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedCollections" }
+    post:
+      tags: [Collections]
+      summary: Create collection
+      x-permissions: ["collections:create"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CollectionCreateRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Collection" }
+
+  /collections/{collectionId}:
+    get:
+      tags: [Collections]
+      summary: Get collection details (includes some badge details)
+      x-permissions: ["collections:read"]
+      parameters:
+        - $ref: "#/components/parameters/CollectionId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CollectionDetail" }
+    patch:
+      tags: [Collections]
+      summary: Update collection (including add/remove badges)
+      x-permissions: ["collections:update"]
+      parameters:
+        - $ref: "#/components/parameters/CollectionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CollectionUpdateRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CollectionDetail" }
+    delete:
+      tags: [Collections]
+      summary: Delete collection
+      x-permissions: ["collections:delete"]
+      parameters:
+        - $ref: "#/components/parameters/CollectionId"
+      responses:
+        "204": { description: No Content }
+
+  /registry/collections:
+    get:
+      tags: [Registry]
+      summary: Browse published collections in registry
+      security: []  # typically public browsing
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Query"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedCollections" }
+
+  /collections/{collectionId}/publish:
+    post:
+      tags: [Registry]
+      summary: Publish a collection to registry
+      x-permissions: ["collections:publish"]
+      parameters:
+        - $ref: "#/components/parameters/CollectionId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CollectionDetail" }
+
+  /collections/{collectionId}/unpublish:
+    post:
+      tags: [Registry]
+      summary: Unpublish a collection from registry
+      x-permissions: ["collections:publish"]
+      parameters:
+        - $ref: "#/components/parameters/CollectionId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CollectionDetail" }
+
+  /collections/{collectionId}/issue-authorizations:
+    post:
+      tags: [Requests]
+      summary: Request authorization for an org to issue a collection
+      x-permissions: ["org:issue-auth:request"]
+      parameters:
+        - $ref: "#/components/parameters/CollectionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/IssueAuthorizationRequestCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IssueAuthorizationRequest" }
+    get:
+      tags: [Requests]
+      summary: List authorization requests for this collection (creator review)
+      x-permissions: ["collections:authorize:manage"]
+      parameters:
+        - $ref: "#/components/parameters/CollectionId"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedIssueAuthorizationRequests" }
+
+  /issue-authorizations/{authRequestId}/approve:
+    post:
+      tags: [Requests]
+      summary: Approve issue authorization request
+      x-permissions: ["collections:authorize:manage"]
+      parameters:
+        - $ref: "#/components/parameters/AuthRequestId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IssueAuthorization" }
+
+  /issue-authorizations/{authRequestId}/reject:
+    post:
+      tags: [Requests]
+      summary: Reject issue authorization request
+      x-permissions: ["collections:authorize:manage"]
+      parameters:
+        - $ref: "#/components/parameters/AuthRequestId"
+      responses:
+        "204": { description: No Content }
+
+  /public/assertions/{assertionId}:
+    get:
+      tags: [Public]
+      summary: Public verification payload for an issued badge (Assertion)
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/AssertionId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Assertion" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: pageSize
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 25 }
+    Query:
+      name: q
+      in: query
+      schema: { type: string }
+      description: Keyword search.
+    OrgId:
+      name: orgId
+      in: path
+      required: true
+      schema: { type: string }
+    CohortId:
+      name: CohortId
+      in: path
+      required: true
+      schema: { type: string }
+    MemberId:
+      name: memberId
+      in: path
+      required: true
+      schema: { type: string }
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string }
+    LearnerId:
+      name: learnerId
+      in: path
+      required: true
+      schema: { type: string }
+    BadgeId:
+      name: badgeId
+      in: path
+      required: true
+      schema: { type: string }
+    CollectionId:
+      name: collectionId
+      in: path
+      required: true
+      schema: { type: string }
+    RequestId:
+      name: requestId
+      in: path
+      required: true
+      schema: { type: string }
+    AuthRequestId:
+      name: authRequestId
+      in: path
+      required: true
+      schema: { type: string }
+    AssertionId:
+      name: assertionId
+      in: path
+      required: true
+      schema: { type: string }
+
+  schemas:
+    # ---------- Common ----------
+    ISODateTime:
+      type: string
+      format: date-time
+
+    PagedMeta:
+      type: object
+      properties:
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+      required: [page, pageSize, total]
+
+    # ---------- Auth ----------
+    RegisterRequest:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        name: { type: string }
+      required: [email, password]
+
+    LoginRequest:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+      required: [email, password]
+
+    RefreshRequest:
+      type: object
+      properties:
+        refreshToken: { type: string }
+      required: [refreshToken]
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken: { type: string, description: "JWT access token" }
+        refreshToken: { type: string }
+        user: { $ref: "#/components/schemas/User" }
+      required: [accessToken, user]
+
+    # ---------- Users ----------
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        name: { type: string }
+        createdAt: { $ref: "#/components/schemas/ISODateTime" }
+      required: [id, email]
+
+    UserSettings:
+      type: object
+      properties:
+        locale: { type: string, default: "en-US" }
+        marketingEmails: { type: boolean, default: false }
+
+    UserSettingsUpdateRequest:
+      type: object
+      properties:
+        locale: { type: string }
+        marketingEmails: { type: boolean }
+
+    PagedUsers:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/User" }
+      required: [meta, data]
+
+    # ---------- Orgs ----------
+    Org:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        about: { type: string }
+        imageUrl: { type: string, format: uri }
+        contactEmail: { type: string, format: email }
+        createdAt: { $ref: "#/components/schemas/ISODateTime" }
+      required: [id, name]
+
+    OrgCreateRequest:
+      type: object
+      properties:
+        name: { type: string }
+        about: { type: string }
+        contactEmail: { type: string, format: email }
+      required: [name]
+
+    OrgUpdateRequest:
+      type: object
+      properties:
+        name: { type: string }
+        about: { type: string }
+        imageUrl: { type: string, format: uri }
+        contactEmail: { type: string, format: email }
+
+    OrgSettings:
+      type: object
+      properties:
+        allowSelfJoin: { type: boolean, default: false }
+        requireAdminApprovalForJoin: { type: boolean, default: true }
+        defaultMemberRole: { type: string, default: "issuer" }
+      required: [allowSelfJoin, requireAdminApprovalForJoin]
+
+    OrgSettingsUpdateRequest:
+      type: object
+      properties:
+        allowSelfJoin: { type: boolean }
+        requireAdminApprovalForJoin: { type: boolean }
+        defaultMemberRole: { type: string }
+
+    PagedOrgs:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Org" }
+      required: [meta, data]
+
+    # ---------- Org Members ----------
+    OrgMember:
+      type: object
+      properties:
+        id: { type: string }
+        orgId: { type: string }
+        userId: { type: string }
+        role:
+          type: string
+          enum: [owner, admin, issuer, viewer]
+        status:
+          type: string
+          enum: [active, invited, suspended]
+        createdAt: { $ref: "#/components/schemas/ISODateTime" }
+      required: [id, orgId, userId, role, status]
+
+    OrgMemberUpdateRequest:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [owner, admin, issuer, viewer]
+        status:
+          type: string
+          enum: [active, suspended]
+
+    PagedOrgMembers:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/OrgMember" }
+      required: [meta, data]
+
+    # ---------- Membership Requests ----------
+    MembershipRequestCreate:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: "If omitted, request is for current user."
+        message: { type: string }
+      additionalProperties: false
+
+    MembershipRequest:
+      type: object
+      properties:
+        id: { type: string }
+        orgId: { type: string }
+        userId: { type: string }
+        status:
+          type: string
+          enum: [pending, approved, rejected, canceled]
+        createdAt: { $ref: "#/components/schemas/ISODateTime" }
+      required: [id, orgId, userId, status]
+
+    PagedMembershipRequests:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/MembershipRequest" }
+      required: [meta, data]
+
+    # ---------- Learners ----------
+    Learner:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        createdAt: { $ref: "#/components/schemas/ISODateTime" }
+      required: [id]
+
+    OrgLearner:
+      type: object
+      properties:
+        orgId: { type: string }
+        learnerId: { type: string }
+        externalRef: { type: string, description: "Roster ID / SIS ID" }
+        status:
+          type: string
+          enum: [active, archived]
+      required: [orgId, learnerId, status]
+
+    OrgLearnerCreateRequest:
+      type: object
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        externalRef: { type: string }
+      required: [name]
+
+    OrgLearnerDetail:
+      allOf:
+        - $ref: "#/components/schemas/OrgLearner"
+        - type: object
+          properties:
+            learner: { $ref: "#/components/schemas/Learner" }
+            badgeProgress:
+              type: array
+              items: { $ref: "#/components/schemas/BadgeProgress" }
+            issuances:
+              type: array
+              items: { $ref: "#/components/schemas/Issuance" }
+
+    PagedLearners:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Learner" }
+      required: [meta, data]
+
+    PagedOrgLearners:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/OrgLearnerDetail" }
+      required: [meta, data]
+
+    BulkLearnerImportRequest:
+      type: object
+      properties:
+        learners:
+          type: array
+          items: { $ref: "#/components/schemas/OrgLearnerCreateRequest" }
+      required: [learners]
+
+    ImportJob:
+      type: object
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [queued, running, complete, failed] }
+        createdAt: { $ref: "#/components/schemas/ISODateTime" }
+        errors:
+          type: array
+          items: { type: string }
+
+    # ---------- Badges ----------
+    Badge:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        imageUrl: { type: string, format: uri }
+        criteria:
+          type: array
+          items: { $ref: "#/components/schemas/BadgeCriteriaItem" }
+        createdByOrgId: { type: string }
+      required: [id, name]
+
+    BadgeCriteriaItem:
+      type: object
+      properties:
+        id: { type: string }
+        label: { type: string }
+        required: { type: boolean, default: true }
+      required: [id, label]
+
+    BadgeCreateRequest:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        imageUrl: { type: string, format: uri }
+        criteria:
+          type: array
+          items: { $ref: "#/components/schemas/BadgeCriteriaItem" }
+        createdByOrgId: { type: string }
+      required: [name, createdByOrgId]
+
+    BadgeUpdateRequest:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        imageUrl: { type: string, format: uri }
+        criteria:
+          type: array
+          items: { $ref: "#/components/schemas/BadgeCriteriaItem" }
+
+    PagedBadges:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Badge" }
+      required: [meta, data]
+
+    # ---------- Progress ----------
+    BadgeProgress:
+      type: object
+      properties:
+        orgId: { type: string }
+        learnerId: { type: string }
+        badgeId: { type: string }
+        status:
+          type: string
+          enum: [not_started, in_progress, complete]
+        completedCriteriaIds:
+          type: array
+          items: { type: string }
+        updatedAt: { $ref: "#/components/schemas/ISODateTime" }
+      required: [orgId, learnerId, badgeId, status]
+
+    BadgeProgressUpdateRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [in_progress, complete]
+        completedCriteriaIds:
+          type: array
+          items: { type: string }
+
+    # ---------- Issuances / Assertions ----------
+    IssuanceCreateRequest:
+      type: object
+      properties:
+        learnerId: { type: string }
+        badgeId: { type: string }
+        evidenceUrl: { type: string, format: uri }
+      required: [learnerId, badgeId]
+
+    Issuance:
+      type: object
+      properties:
+        id: { type: string }
+        orgId: { type: string }
+        learnerId: { type: string }
+        badgeId: { type: string }
+        assertionId: { type: string }
+        status: { type: string, enum: [issued, revoked] }
+        issuedAt: { $ref: "#/components/schemas/ISODateTime" }
+      required: [id, orgId, learnerId, badgeId, assertionId, status]
+
+    PagedIssuances:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Issuance" }
+      required: [meta, data]
+
+    Assertion:
+      type: object
+      description: "Public verification payload (Open Badges-aligned in later iterations)."
+      properties:
+        id: { type: string }
+        issuerOrgId: { type: string }
+        recipientLearnerId: { type: string }
+        badgeId: { type: string }
+        issuedAt: { $ref: "#/components/schemas/ISODateTime" }
+        evidenceUrl: { type: string, format: uri }
+      required: [id, issuerOrgId, recipientLearnerId, badgeId, issuedAt]
+
+    # ---------- Learner Badge View ----------
+    LearnerBadgeJourney:
+      type: object
+      properties:
+        learnerId: { type: string }
+        badge: { $ref: "#/components/schemas/Badge" }
+        progressByOrg:
+          type: array
+          items: { $ref: "#/components/schemas/BadgeProgress" }
+        assertions:
+          type: array
+          items: { $ref: "#/components/schemas/Assertion" }
+      required: [learnerId, badge]
+
+    PagedLearnerBadges:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/LearnerBadgeJourney" }
+      required: [meta, data]
+
+    # ---------- Collections ----------
+    Collection:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        createdByOrgId: { type: string }
+        published: { type: boolean, default: false }
+      required: [id, name, createdByOrgId]
+
+    CollectionDetail:
+      allOf:
+        - $ref: "#/components/schemas/Collection"
+        - type: object
+          properties:
+            badgeSummaries:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  name: { type: string }
+                  imageUrl: { type: string, format: uri }
+                required: [id, name]
+
+    CollectionCreateRequest:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        createdByOrgId: { type: string }
+        badgeIds:
+          type: array
+          items: { type: string }
+      required: [name, createdByOrgId]
+
+    CollectionUpdateRequest:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        addBadgeIds:
+          type: array
+          items: { type: string }
+        removeBadgeIds:
+          type: array
+          items: { type: string }
+
+    PagedCollections:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Collection" }
+      required: [meta, data]
+
+    # ---------- Issue Authorization Requests ----------
+    IssueAuthorizationRequestCreate:
+      type: object
+      properties:
+        requestingOrgId: { type: string }
+        message: { type: string }
+      required: [requestingOrgId]
+
+    IssueAuthorizationRequest:
+      type: object
+      properties:
+        id: { type: string }
+        collectionId: { type: string }
+        requestingOrgId: { type: string }
+        status: { type: string, enum: [pending, approved, rejected] }
+        createdAt: { $ref: "#/components/schemas/ISODateTime" }
+      required: [id, collectionId, requestingOrgId, status]
+
+    IssueAuthorization:
+      type: object
+      properties:
+        id: { type: string }
+        collectionId: { type: string }
+        orgId: { type: string }
+        grantedAt: { $ref: "#/components/schemas/ISODateTime" }
+      required: [id, collectionId, orgId]
+
+    PagedIssueAuthorizationRequests:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/IssueAuthorizationRequest" }
+      required: [meta, data]
+
+    # ---------- Cohorts ----------
+    Cohort:
+      type: object
+      properties:
+        id: { type: string }
+        orgId: { type: string }
+        name: { type: string }
+        description: { type: string }
+        createdAt: { $ref: "#/components/schemas/ISODateTime" }
+      required: [id, orgId, name]
+
+    CohortDetail:
+      allOf:
+        - $ref: "#/components/schemas/Cohort"
+        - type: object
+          properties:
+            learners:
+              type: array
+              items: { $ref: "#/components/schemas/Learner" }
+
+    CohortCreateRequest:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+      required: [name]
+
+    CohortUpdateRequest:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+
+    CohortLearnersAddRequest:
+      type: object
+      properties:
+        learnerIds:
+          type: array
+          items: { type: string }
+      required: [learnerIds]
+
+    PagedCohorts:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Cohort" }
+      required: [meta, data]
