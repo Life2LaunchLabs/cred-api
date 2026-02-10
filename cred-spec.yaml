@@ -34,6 +34,8 @@ tags:
     description: Badge issuance and revocation.
   - name: Public
     description: Unauthenticated public verification endpoints.
+  - name: Reporting
+    description: Aggregated statistics and analytics for organizations.
 
 security:
   - bearerAuth: []
@@ -260,12 +262,32 @@ paths:
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
 
+  /orgs/{orgId}/stats:
+    get:
+      operationId: getOrgStats
+      tags: [Orgs, Reporting]
+      summary: Get org statistics
+      description: Returns aggregated statistics for the organization (member counts, badge counts, issuance counts).
+      x-permissions: ["org:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrgStats" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
   /orgs/{orgId}/members:
     get:
       operationId: listOrgMembers
       tags: [Org Members]
       summary: List org members (staff)
-      description: Returns a paginated list of staff members for the organization.
+      description: Returns a paginated list of staff members for the organization, including nested user profiles.
       x-permissions: ["org:members:read"]
       x-org-scope: "{orgId}"
       parameters:
@@ -278,7 +300,7 @@ paths:
           description: OK
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/PagedOrgMembers" }
+              schema: { $ref: "#/components/schemas/PagedOrgMemberDetails" }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
@@ -850,6 +872,31 @@ paths:
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
 
+  /users/{userId}/orgs:
+    get:
+      operationId: listUserOrgs
+      tags: [Users, Orgs]
+      summary: List orgs the user belongs to
+      description: Returns the organizations the user is a member of, together with their membership record (role, status).
+      x-permissions: ["user:orgs:read"]
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/UserOrgMembership" }
+                required: [data]
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
   /learners:
     get:
       operationId: listLearners
@@ -1040,6 +1087,10 @@ paths:
         - $ref: "#/components/parameters/Page"
         - $ref: "#/components/parameters/PageSize"
         - $ref: "#/components/parameters/Query"
+        - name: orgId
+          in: query
+          schema: { type: string }
+          description: Filter collections accessible to this org (created by or authorized for).
       responses:
         "200":
           description: OK
@@ -1499,8 +1550,55 @@ components:
           type: string
           description: User's display name.
           example: "Jane Doe"
+        profileImageUrl:
+          type: string
+          format: uri
+          description: URL to the user's profile picture.
+          example: "https://cdn.example.com/users/jane-avatar.jpg"
+        coverImageUrl:
+          type: string
+          format: uri
+          description: URL to the user's cover/banner image.
+          example: "https://cdn.example.com/users/jane-cover.jpg"
+        bio:
+          type: string
+          maxLength: 500
+          description: Short biography or description.
+          example: "Credentialing specialist passionate about open badges and lifelong learning."
+        title:
+          type: string
+          maxLength: 120
+          description: Professional title or role.
+          example: "Director of Credentialing"
+        location:
+          type: string
+          maxLength: 120
+          description: City, region, or general location.
+          example: "Austin, TX"
+        socialLinks:
+          $ref: "#/components/schemas/SocialLinks"
         createdAt: { $ref: "#/components/schemas/ISODateTime" }
       required: [id, email]
+
+    SocialLinks:
+      type: object
+      description: Optional social/professional links for a user profile.
+      properties:
+        linkedin:
+          type: string
+          format: uri
+          description: LinkedIn profile URL.
+          example: "https://linkedin.com/in/janedoe"
+        website:
+          type: string
+          format: uri
+          description: Personal or professional website.
+          example: "https://janedoe.com"
+        x:
+          type: string
+          format: uri
+          description: X (Twitter) profile URL.
+          example: "https://x.com/janedoe"
 
     UserSettings:
       type: object
@@ -1555,11 +1653,33 @@ components:
           format: uri
           description: URL to the organization's logo or avatar image.
           example: "https://cdn.example.com/orgs/acme-logo.png"
+        coverImageUrl:
+          type: string
+          format: uri
+          description: URL to the organization's cover/banner image.
+          example: "https://cdn.example.com/orgs/acme-cover.jpg"
         contactEmail:
           type: string
           format: email
           description: Public contact email for the organization.
           example: "contact@acme.com"
+        phone:
+          type: string
+          maxLength: 30
+          description: Public contact phone number.
+          example: "+1 (512) 555-0199"
+        website:
+          type: string
+          format: uri
+          description: Organization website URL.
+          example: "https://acmetraining.com"
+        location:
+          type: string
+          maxLength: 200
+          description: City, region, or general address.
+          example: "Austin, TX"
+        socialLinks:
+          $ref: "#/components/schemas/SocialLinks"
         createdAt: { $ref: "#/components/schemas/ISODateTime" }
         updatedAt: { $ref: "#/components/schemas/ISODateTime" }
       required: [id, name]
@@ -1579,11 +1699,29 @@ components:
           maxLength: 2000
           description: Short description of the organization.
           example: "We provide industry-leading professional development."
+        coverImageUrl:
+          type: string
+          format: uri
+          description: Cover/banner image URL.
         contactEmail:
           type: string
           format: email
           description: Public contact email.
           example: "contact@acme.com"
+        phone:
+          type: string
+          maxLength: 30
+          description: Public phone number.
+        website:
+          type: string
+          format: uri
+          description: Organization website.
+        location:
+          type: string
+          maxLength: 200
+          description: City or region.
+        socialLinks:
+          $ref: "#/components/schemas/SocialLinks"
       required: [name]
 
     OrgUpdateRequest:
@@ -1593,7 +1731,12 @@ components:
         name: { type: string, minLength: 1, maxLength: 255 }
         about: { type: string, maxLength: 2000 }
         imageUrl: { type: string, format: uri }
+        coverImageUrl: { type: string, format: uri }
         contactEmail: { type: string, format: email }
+        phone: { type: string, maxLength: 30 }
+        website: { type: string, format: uri }
+        location: { type: string, maxLength: 200 }
+        socialLinks: { $ref: "#/components/schemas/SocialLinks" }
 
     OrgSettings:
       type: object
@@ -1623,6 +1766,47 @@ components:
         allowSelfJoin: { type: boolean }
         requireAdminApprovalForJoin: { type: boolean }
         defaultMemberRole: { type: string }
+
+    OrgStats:
+      type: object
+      description: Aggregated statistics for an organization.
+      properties:
+        totalMembers:
+          type: integer
+          description: Total active staff members.
+          example: 12
+        totalLearners:
+          type: integer
+          description: Total learners affiliated with the org.
+          example: 347
+        totalBadges:
+          type: integer
+          description: Total badge definitions created by the org.
+          example: 24
+        totalIssuances:
+          type: integer
+          description: Total badges issued to learners.
+          example: 1583
+        activeLearners:
+          type: integer
+          description: Learners with active status.
+          example: 310
+        badgesIssuedThisMonth:
+          type: integer
+          description: Badges issued in the current calendar month.
+          example: 47
+        badgesIssuedThisYear:
+          type: integer
+          description: Badges issued in the current calendar year.
+          example: 892
+      required:
+        - totalMembers
+        - totalLearners
+        - totalBadges
+        - totalIssuances
+        - activeLearners
+        - badgesIssuedThisMonth
+        - badgesIssuedThisYear
 
     PagedOrgs:
       type: object
@@ -1682,6 +1866,31 @@ components:
           type: array
           items: { $ref: "#/components/schemas/OrgMember" }
       required: [meta, data]
+
+    OrgMemberDetail:
+      allOf:
+        - $ref: "#/components/schemas/OrgMember"
+        - type: object
+          description: Extended org-member record with nested user profile.
+          properties:
+            user: { $ref: "#/components/schemas/User" }
+
+    PagedOrgMemberDetails:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/OrgMemberDetail" }
+      required: [meta, data]
+
+    UserOrgMembership:
+      type: object
+      description: An organization together with the user's membership record in it.
+      properties:
+        org: { $ref: "#/components/schemas/Org" }
+        membership: { $ref: "#/components/schemas/OrgMember" }
+      required: [org, membership]
 
     # ---------- Membership Requests ----------
     MembershipRequestCreate:
@@ -2170,6 +2379,15 @@ components:
           type: string
           description: The org that created this collection.
           example: "org_abc123"
+        imageUrl:
+          type: string
+          format: uri
+          description: Cover image URL for the collection.
+          example: "https://cdn.example.com/collections/leadership-cover.png"
+        badgeCount:
+          type: integer
+          description: Total number of badges in the collection.
+          example: 8
         published:
           type: boolean
           default: false
@@ -2183,7 +2401,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/Collection"
         - type: object
-          description: Collection with embedded badge summaries.
+          description: Collection with embedded badge summaries and usage stats.
           properties:
             badgeSummaries:
               type: array
@@ -2197,11 +2415,43 @@ components:
                   name:
                     type: string
                     example: "Project Management Fundamentals"
+                  description:
+                    type: string
+                    example: "Awarded for demonstrating core PM competencies."
                   imageUrl:
                     type: string
                     format: uri
                     example: "https://cdn.example.com/badges/pm-fundamentals.png"
+                  issuanceCount:
+                    type: integer
+                    description: Total number of times this badge has been issued.
+                    example: 142
                 required: [id, name]
+            stats:
+              $ref: "#/components/schemas/CollectionStats"
+
+    CollectionStats:
+      type: object
+      description: Aggregated usage statistics for a collection.
+      properties:
+        totalIssuances:
+          type: integer
+          description: Total badges issued across all badges in this collection.
+          example: 1583
+        uniqueLearners:
+          type: integer
+          description: Distinct learners who earned at least one badge in this collection.
+          example: 420
+        badgeCount:
+          type: integer
+          description: Number of badges in this collection.
+          example: 12
+        averageCompletionRate:
+          type: number
+          format: float
+          description: Average percentage of learners who complete all badges (0-100).
+          example: 68.5
+      required: [totalIssuances, uniqueLearners, badgeCount]
 
     CollectionCreateRequest:
       type: object
@@ -2218,6 +2468,10 @@ components:
           maxLength: 2000
           description: Collection description.
           example: "A series of badges covering leadership competencies."
+        imageUrl:
+          type: string
+          format: uri
+          description: Cover image URL for the collection.
         createdByOrgId:
           type: string
           description: The org creating this collection.
@@ -2234,6 +2488,7 @@ components:
       properties:
         name: { type: string, minLength: 1, maxLength: 255 }
         description: { type: string, maxLength: 2000 }
+        imageUrl: { type: string, format: uri }
         addBadgeIds:
           type: array
           description: Badge IDs to add to the collection.
