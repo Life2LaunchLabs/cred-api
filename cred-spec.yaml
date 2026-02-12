@@ -651,6 +651,16 @@ paths:
         - $ref: "#/components/parameters/Page"
         - $ref: "#/components/parameters/PageSize"
         - $ref: "#/components/parameters/Query"
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, draft, archived]
+          description: Filter by cohort status.
+        - name: staffId
+          in: query
+          schema: { type: string }
+          description: Filter cohorts where this member is assigned.
       responses:
         "200":
           description: OK
@@ -1644,6 +1654,11 @@ components:
           type: string
           description: Organization display name.
           example: "Acme Training Co."
+        slug:
+          type: string
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          description: URL-friendly unique identifier for the organization.
+          example: "acme-training"
         about:
           type: string
           description: Short description or bio for the organization.
@@ -1682,7 +1697,7 @@ components:
           $ref: "#/components/schemas/SocialLinks"
         createdAt: { $ref: "#/components/schemas/ISODateTime" }
         updatedAt: { $ref: "#/components/schemas/ISODateTime" }
-      required: [id, name]
+      required: [id, name, slug]
 
     OrgCreateRequest:
       type: object
@@ -1694,6 +1709,11 @@ components:
           maxLength: 255
           description: Organization name.
           example: "Acme Training Co."
+        slug:
+          type: string
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          description: URL-friendly identifier. Auto-generated from name if omitted.
+          example: "acme-training"
         about:
           type: string
           maxLength: 2000
@@ -1729,6 +1749,7 @@ components:
       description: Partial update for an organization's profile.
       properties:
         name: { type: string, minLength: 1, maxLength: 255 }
+        slug: { type: string, pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
         about: { type: string, maxLength: 2000 }
         imageUrl: { type: string, format: uri }
         coverImageUrl: { type: string, format: uri }
@@ -2596,13 +2617,36 @@ components:
           type: string
           description: Cohort display name.
           example: "Fall 2025 Cohort"
+        slug:
+          type: string
+          description: URL-safe identifier for routing.
+          example: "fall-2025-cohort"
         description:
           type: string
           description: Optional description of the cohort.
           example: "Learners enrolled in the Fall 2025 training program."
+        status:
+          type: string
+          enum: [active, draft, archived]
+          description: Current cohort status.
+          example: "active"
+        coverImageUrl:
+          type: string
+          format: uri
+          description: Optional cover image URL for display.
+          example: "https://images.unsplash.com/photo-1234?w=400&h=300"
+        assignedStaffIds:
+          type: array
+          description: Member IDs of staff assigned to this cohort.
+          items: { type: string }
+          example: ["mem_abc123", "mem_def456"]
+        learnerCount:
+          type: integer
+          description: Number of learners in this cohort.
+          example: 24
         createdAt: { $ref: "#/components/schemas/ISODateTime" }
         updatedAt: { $ref: "#/components/schemas/ISODateTime" }
-      required: [id, orgId, name]
+      required: [id, orgId, name, slug, status]
 
     CohortDetail:
       allOf:
@@ -2625,19 +2669,42 @@ components:
           maxLength: 255
           description: Cohort name.
           example: "Fall 2025 Cohort"
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: URL-safe identifier.
+          example: "fall-2025-cohort"
         description:
           type: string
           maxLength: 2000
           description: Optional description.
           example: "Learners enrolled in the Fall 2025 training program."
-      required: [name]
+        status:
+          type: string
+          enum: [active, draft, archived]
+          description: Cohort status (defaults to draft).
+          example: "draft"
+        coverImageUrl:
+          type: string
+          format: uri
+          description: Optional cover image URL.
+        assignedStaffIds:
+          type: array
+          description: Member IDs of staff to assign.
+          items: { type: string }
+      required: [name, slug]
 
     CohortUpdateRequest:
       type: object
       description: Partial update for a cohort.
       properties:
         name: { type: string, minLength: 1, maxLength: 255 }
+        slug: { type: string, minLength: 1, maxLength: 255 }
         description: { type: string, maxLength: 2000 }
+        status: { type: string, enum: [active, draft, archived] }
+        coverImageUrl: { type: string, format: uri }
+        assignedStaffIds: { type: array, items: { type: string } }
 
     CohortLearnersAddRequest:
       type: object
