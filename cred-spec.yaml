@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Badging App API (v0)
-  version: 0.1.0
+  version: 0.2.0
   description: >
     v0 OpenAPI spec for org/staff/learner/badge/collection management with JWT auth + RBAC.
     Auth is enforced by required permissions (vendor extension `x-permissions`) and org-scope checks.
@@ -20,6 +20,10 @@ tags:
     description: Learners affiliated with an organization.
   - name: Cohorts
     description: Groups of learners within an organization.
+  - name: Programs
+    description: Program templates with phases, badges, and checkpoints.
+  - name: Program Assignments
+    description: Assigning programs to cohorts and learners with progress tracking.
   - name: Users
     description: Platform-wide user profiles and settings.
   - name: Badges
@@ -801,6 +805,369 @@ paths:
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
 
+  # ---------- Programs ----------
+  /orgs/{orgId}/programs:
+    get:
+      operationId: listPrograms
+      tags: [Programs]
+      summary: List programs for an organization
+      description: Returns programs filtered by status.
+      x-permissions: ["org:programs:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - name: status
+          in: query
+          description: Filter by program status.
+          schema:
+            type: string
+            enum: [draft, active, archived]
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedPrograms" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+    post:
+      operationId: createProgram
+      tags: [Programs]
+      summary: Create a new program
+      description: Creates a program template with phases.
+      x-permissions: ["org:programs:write"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProgramCreateRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProgramDetail" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /orgs/{orgId}/programs/{programSlug}:
+    get:
+      operationId: getProgram
+      tags: [Programs]
+      summary: Get program details
+      description: Returns program with full phase details.
+      x-permissions: ["org:programs:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/ProgramSlug"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProgramDetail" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    patch:
+      operationId: updateProgram
+      tags: [Programs]
+      summary: Update program
+      description: Partially updates program details and/or phases.
+      x-permissions: ["org:programs:write"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/ProgramSlug"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProgramUpdateRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProgramDetail" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    delete:
+      operationId: deleteProgram
+      tags: [Programs]
+      summary: Delete program
+      description: Deletes a program if it has no active assignments.
+      x-permissions: ["org:programs:write"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/ProgramSlug"
+      responses:
+        "204": { description: No Content }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: Cannot delete program with active assignments
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  # ---------- Cohort Program Assignments ----------
+  /orgs/{orgId}/cohorts/{cohortId}/program-assignments:
+    get:
+      operationId: listCohortProgramAssignments
+      tags: [Program Assignments]
+      summary: List program assignments for a cohort
+      description: Returns all programs assigned to a cohort.
+      x-permissions: ["org:programs:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/CohortId"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedCohortProgramAssignments" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    post:
+      operationId: assignProgramToCohort
+      tags: [Program Assignments]
+      summary: Assign program to cohort
+      description: Assigns a program to a cohort, auto-creating learner assignments.
+      x-permissions: ["org:programs:assign"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/CohortId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CohortProgramAssignmentCreateRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CohortProgramAssignmentDetail" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /orgs/{orgId}/cohorts/{cohortId}/program-assignments/{cohortAssignmentId}:
+    get:
+      operationId: getCohortProgramAssignment
+      tags: [Program Assignments]
+      summary: Get cohort program assignment details
+      description: Returns assignment with aggregate progress.
+      x-permissions: ["org:programs:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/CohortId"
+        - $ref: "#/components/parameters/CohortAssignmentId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CohortProgramAssignmentDetail" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    delete:
+      operationId: unassignProgramFromCohort
+      tags: [Program Assignments]
+      summary: Remove program assignment from cohort
+      description: Removes assignment and all derived learner assignments.
+      x-permissions: ["org:programs:assign"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/CohortId"
+        - $ref: "#/components/parameters/CohortAssignmentId"
+      responses:
+        "204": { description: No Content }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ---------- Learner Program Assignments ----------
+  /orgs/{orgId}/learners/{learnerId}/program-assignments:
+    get:
+      operationId: listLearnerProgramAssignments
+      tags: [Program Assignments]
+      summary: List program assignments for a learner
+      description: Returns all programs assigned to a learner.
+      x-permissions: ["org:programs:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/LearnerId"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedLearnerProgramAssignments" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    post:
+      operationId: assignProgramToLearner
+      tags: [Program Assignments]
+      summary: Assign program to learner
+      description: Directly assigns a program to a learner.
+      x-permissions: ["org:programs:assign"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/LearnerId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LearnerProgramAssignmentCreateRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearnerProgramAssignmentDetail" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /orgs/{orgId}/learners/{learnerId}/program-assignments/{learnerAssignmentId}:
+    get:
+      operationId: getLearnerProgramAssignment
+      tags: [Program Assignments]
+      summary: Get learner program assignment details
+      description: Returns assignment with full progress tracking.
+      x-permissions: ["org:programs:read"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/LearnerId"
+        - $ref: "#/components/parameters/LearnerAssignmentId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearnerProgramAssignmentDetail" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    delete:
+      operationId: unassignProgramFromLearner
+      tags: [Program Assignments]
+      summary: Remove program assignment from learner
+      description: Removes assignment (only if not cohort-derived).
+      x-permissions: ["org:programs:assign"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/LearnerId"
+        - $ref: "#/components/parameters/LearnerAssignmentId"
+      responses:
+        "204": { description: No Content }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: Cannot remove cohort-derived assignment
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  # ---------- Checkpoint Completions ----------
+  /orgs/{orgId}/learners/{learnerId}/program-assignments/{learnerAssignmentId}/checkpoints/{checkpointId}/sign:
+    post:
+      operationId: signCheckpoint
+      tags: [Program Assignments]
+      summary: Sign off on a checkpoint
+      description: Staff marks a checkpoint as complete for a learner.
+      x-permissions: ["org:programs:sign"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/LearnerId"
+        - $ref: "#/components/parameters/LearnerAssignmentId"
+        - name: checkpointId
+          in: path
+          required: true
+          schema: { type: string, example: "chk_abc123" }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CheckpointSignRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CheckpointCompletion" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: Checkpoint already signed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /orgs/{orgId}/learners/{learnerId}/program-assignments/{learnerAssignmentId}/checkpoints/{checkpointId}/unsign/{completionId}:
+    delete:
+      operationId: unsignCheckpoint
+      tags: [Program Assignments]
+      summary: Remove checkpoint signature
+      description: Staff revokes a checkpoint completion.
+      x-permissions: ["org:programs:sign"]
+      x-org-scope: "{orgId}"
+      parameters:
+        - $ref: "#/components/parameters/OrgId"
+        - $ref: "#/components/parameters/LearnerId"
+        - $ref: "#/components/parameters/LearnerAssignmentId"
+        - name: checkpointId
+          in: path
+          required: true
+          schema: { type: string, example: "chk_abc123" }
+        - $ref: "#/components/parameters/CheckpointCompletionId"
+      responses:
+        "204": { description: No Content }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
   /users:
     get:
       operationId: listUsers
@@ -1446,6 +1813,36 @@ components:
       required: true
       description: Public assertion ID.
       schema: { type: string, example: "ast_abc123" }
+    ProgramId:
+      name: programId
+      in: path
+      required: true
+      description: Program ID.
+      schema: { type: string, example: "prg_abc123" }
+    ProgramSlug:
+      name: programSlug
+      in: path
+      required: true
+      description: Program slug.
+      schema: { type: string, example: "leadership-track" }
+    CohortAssignmentId:
+      name: cohortAssignmentId
+      in: path
+      required: true
+      description: Cohort program assignment ID.
+      schema: { type: string, example: "asn_coh_abc123" }
+    LearnerAssignmentId:
+      name: learnerAssignmentId
+      in: path
+      required: true
+      description: Learner program assignment ID.
+      schema: { type: string, example: "asn_lrn_abc123" }
+    CheckpointCompletionId:
+      name: completionId
+      in: path
+      required: true
+      description: Checkpoint completion ID.
+      schema: { type: string, example: "chk_cmp_abc123" }
 
   schemas:
     # ---------- Common ----------
@@ -2724,4 +3121,449 @@ components:
         data:
           type: array
           items: { $ref: "#/components/schemas/Cohort" }
+      required: [meta, data]
+
+    # ---------- Programs ----------
+    Program:
+      type: object
+      description: A reusable credential program template containing phases, badges, and checkpoints.
+      properties:
+        id:
+          type: string
+          description: Unique program identifier.
+          example: "prg_abc123"
+        orgId:
+          type: string
+          description: The organization that created this program.
+          example: "org_abc123"
+        name:
+          type: string
+          description: Program display name.
+          example: "Leadership Development Track"
+        slug:
+          type: string
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          description: URL-friendly unique identifier for the program.
+          example: "leadership-development-track"
+        description:
+          type: string
+          description: Detailed program description and objectives.
+          example: "Comprehensive leadership training program spanning core competencies."
+        imageUrl:
+          type: string
+          format: uri
+          description: Cover image URL for the program.
+          example: "https://cdn.example.com/programs/leadership-cover.png"
+        status:
+          type: string
+          enum: [draft, active, archived]
+          description: Current program status.
+          example: "active"
+        phaseCount:
+          type: integer
+          description: Total number of phases in the program.
+          example: 4
+        totalBadgeCount:
+          type: integer
+          description: Total number of badges across all phases.
+          example: 12
+        totalCheckpointCount:
+          type: integer
+          description: Total number of checkpoints across all phases.
+          example: 8
+        createdAt: { $ref: "#/components/schemas/ISODateTime" }
+        updatedAt: { $ref: "#/components/schemas/ISODateTime" }
+      required: [id, orgId, name, slug, status]
+
+    ProgramDetail:
+      allOf:
+        - $ref: "#/components/schemas/Program"
+        - type: object
+          description: Program with full phase details including badges and checkpoints.
+          properties:
+            phases:
+              type: array
+              description: Ordered list of phases in this program.
+              items: { $ref: "#/components/schemas/Phase" }
+
+    Phase:
+      type: object
+      description: A phase within a program containing badges and checkpoints.
+      properties:
+        id:
+          type: string
+          description: Unique phase identifier.
+          example: "phs_abc123"
+        name:
+          type: string
+          description: Phase display name.
+          example: "Foundation Skills"
+        description:
+          type: string
+          description: Phase description and learning objectives.
+          example: "Core foundational competencies required for leadership roles."
+        order:
+          type: integer
+          description: Display order within the program (0-indexed).
+          example: 0
+        badgeIds:
+          type: array
+          description: List of badge IDs included in this phase.
+          items:
+            type: string
+            example: "bdg_abc123"
+        checkpoints:
+          type: array
+          description: Checkpoints that must be signed off in this phase.
+          items: { $ref: "#/components/schemas/Checkpoint" }
+      required: [id, name, order, badgeIds, checkpoints]
+
+    Checkpoint:
+      type: object
+      description: A program-specific milestone that requires staff sign-off.
+      properties:
+        id:
+          type: string
+          description: Unique checkpoint identifier.
+          example: "chk_abc123"
+        label:
+          type: string
+          description: Checkpoint description.
+          example: "Complete project proposal review with mentor"
+        isRequired:
+          type: boolean
+          default: true
+          description: Whether this checkpoint is required for phase completion.
+          example: true
+      required: [id, label]
+
+    ProgramCreateRequest:
+      type: object
+      description: Payload for creating a program.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Program name.
+          example: "Leadership Development Track"
+        description:
+          type: string
+          maxLength: 2000
+          description: Program description.
+        imageUrl:
+          type: string
+          format: uri
+          description: Cover image URL.
+        status:
+          type: string
+          enum: [draft, active, archived]
+          default: draft
+          description: Initial program status.
+        phases:
+          type: array
+          description: Initial phases for the program.
+          items: { $ref: "#/components/schemas/PhaseCreateRequest" }
+      required: [name]
+
+    PhaseCreateRequest:
+      type: object
+      description: Phase definition for program creation/update.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: "Foundation Skills"
+        description:
+          type: string
+          maxLength: 1000
+        order:
+          type: integer
+          minimum: 0
+          example: 0
+        badgeIds:
+          type: array
+          items:
+            type: string
+            example: "bdg_abc123"
+        checkpoints:
+          type: array
+          items: { $ref: "#/components/schemas/CheckpointCreateRequest" }
+      required: [name, order, badgeIds, checkpoints]
+
+    CheckpointCreateRequest:
+      type: object
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 500
+          example: "Complete project proposal review"
+        isRequired:
+          type: boolean
+          default: true
+      required: [label]
+
+    ProgramUpdateRequest:
+      type: object
+      description: Payload for updating a program.
+      properties:
+        name: { type: string, minLength: 1, maxLength: 255 }
+        description: { type: string, maxLength: 2000 }
+        imageUrl: { type: string, format: uri }
+        status:
+          type: string
+          enum: [draft, active, archived]
+        phases:
+          type: array
+          items: { $ref: "#/components/schemas/PhaseCreateRequest" }
+
+    PagedPrograms:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Program" }
+      required: [meta, data]
+
+    # ---------- Program Assignments ----------
+    CohortProgramAssignment:
+      type: object
+      description: A program assigned to a cohort, creating templates for learner assignments.
+      properties:
+        id:
+          type: string
+          description: Unique assignment identifier.
+          example: "asn_coh_abc123"
+        cohortId:
+          type: string
+          description: The cohort receiving the program.
+          example: "coh_abc123"
+        programId:
+          type: string
+          description: The program being assigned.
+          example: "prg_abc123"
+        assignedBy:
+          type: string
+          description: User ID who created the assignment.
+          example: "usr_abc123"
+        assignedAt: { $ref: "#/components/schemas/ISODateTime" }
+        phaseDueDates:
+          type: array
+          description: Optional due dates for each phase (by phase ID).
+          items: { $ref: "#/components/schemas/PhaseDueDate" }
+      required: [id, cohortId, programId, assignedBy, assignedAt]
+
+    CohortProgramAssignmentDetail:
+      allOf:
+        - $ref: "#/components/schemas/CohortProgramAssignment"
+        - type: object
+          description: Cohort assignment with program details and aggregate progress.
+          properties:
+            program: { $ref: "#/components/schemas/ProgramDetail" }
+            cohort:
+              type: object
+              description: Basic cohort info.
+              properties:
+                id: { type: string, example: "coh_abc123" }
+                name: { type: string, example: "Fall 2025 Cohort" }
+                slug: { type: string, example: "fall-2025-cohort" }
+              required: [id, name, slug]
+            learnerAssignmentCount:
+              type: integer
+              description: Number of learners with this program assignment.
+              example: 24
+
+    LearnerProgramAssignment:
+      type: object
+      description: A program assigned to a learner, either directly or via cohort.
+      properties:
+        id:
+          type: string
+          description: Unique assignment identifier.
+          example: "asn_lrn_abc123"
+        learnerId:
+          type: string
+          description: The learner receiving the program.
+          example: "lrn_abc123"
+        programId:
+          type: string
+          description: The program being assigned.
+          example: "prg_abc123"
+        cohortAssignmentId:
+          type: string
+          description: If assigned via cohort, the cohort assignment ID.
+          example: "asn_coh_abc123"
+        assignedBy:
+          type: string
+          description: User ID who created the assignment.
+          example: "usr_abc123"
+        assignedAt: { $ref: "#/components/schemas/ISODateTime" }
+        phaseDueDates:
+          type: array
+          description: Due dates for each phase (inherited or custom).
+          items: { $ref: "#/components/schemas/PhaseDueDate" }
+        completedAt:
+          type: string
+          format: date-time
+          description: When the learner completed all requirements.
+      required: [id, learnerId, programId, assignedBy, assignedAt]
+
+    LearnerProgramAssignmentDetail:
+      allOf:
+        - $ref: "#/components/schemas/LearnerProgramAssignment"
+        - type: object
+          description: Learner assignment with full progress tracking.
+          properties:
+            program: { $ref: "#/components/schemas/ProgramDetail" }
+            learner:
+              type: object
+              description: Basic learner info.
+              properties:
+                id: { type: string, example: "lrn_abc123" }
+                name: { type: string, example: "Alex Rivera" }
+                email: { type: string, example: "alex@example.com" }
+              required: [id, name]
+            progress: { $ref: "#/components/schemas/ProgramProgress" }
+
+    ProgramProgress:
+      type: object
+      description: Learner's progress through a program.
+      properties:
+        badgesEarned:
+          type: integer
+          description: Number of badges earned.
+          example: 5
+        badgesTotal:
+          type: integer
+          description: Total badges in program.
+          example: 12
+        checkpointsSigned:
+          type: integer
+          description: Number of checkpoints signed.
+          example: 3
+        checkpointsTotal:
+          type: integer
+          description: Total checkpoints in program.
+          example: 8
+        phaseProgress:
+          type: array
+          description: Per-phase completion status.
+          items: { $ref: "#/components/schemas/PhaseProgress" }
+        checkpointCompletions:
+          type: array
+          description: All checkpoint completions for this assignment.
+          items: { $ref: "#/components/schemas/CheckpointCompletion" }
+      required: [badgesEarned, badgesTotal, checkpointsSigned, checkpointsTotal]
+
+    PhaseProgress:
+      type: object
+      description: Progress for a single phase.
+      properties:
+        phaseId: { type: string, example: "phs_abc123" }
+        badgesEarned: { type: integer, example: 2 }
+        badgesTotal: { type: integer, example: 3 }
+        checkpointsSigned: { type: integer, example: 1 }
+        checkpointsTotal: { type: integer, example: 2 }
+        isComplete:
+          type: boolean
+          description: Whether all requirements are met.
+          example: false
+      required: [phaseId, badgesEarned, badgesTotal, checkpointsSigned, checkpointsTotal, isComplete]
+
+    PhaseDueDate:
+      type: object
+      description: Due date for a specific phase within an assignment.
+      properties:
+        phaseId:
+          type: string
+          description: The phase this due date applies to.
+          example: "phs_abc123"
+        dueDate:
+          type: string
+          format: date-time
+          description: When this phase should be completed.
+          example: "2025-09-15T23:59:59Z"
+      required: [phaseId, dueDate]
+
+    CheckpointCompletion:
+      type: object
+      description: Record of a checkpoint being signed off.
+      properties:
+        id:
+          type: string
+          description: Unique completion identifier.
+          example: "chk_cmp_abc123"
+        assignmentId:
+          type: string
+          description: Learner assignment ID.
+          example: "asn_lrn_abc123"
+        checkpointId:
+          type: string
+          description: The checkpoint that was completed.
+          example: "chk_abc123"
+        signedBy:
+          type: string
+          description: Staff user who signed off.
+          example: "usr_abc123"
+        signedAt: { $ref: "#/components/schemas/ISODateTime" }
+        notes:
+          type: string
+          maxLength: 1000
+          description: Optional notes about the completion.
+      required: [id, assignmentId, checkpointId, signedBy, signedAt]
+
+    CohortProgramAssignmentCreateRequest:
+      type: object
+      description: Payload to assign a program to a cohort.
+      properties:
+        programId:
+          type: string
+          description: Program to assign.
+          example: "prg_abc123"
+        phaseDueDates:
+          type: array
+          items: { $ref: "#/components/schemas/PhaseDueDate" }
+      required: [programId]
+
+    LearnerProgramAssignmentCreateRequest:
+      type: object
+      description: Payload to assign a program to a learner.
+      properties:
+        programId:
+          type: string
+          description: Program to assign.
+          example: "prg_abc123"
+        phaseDueDates:
+          type: array
+          items: { $ref: "#/components/schemas/PhaseDueDate" }
+      required: [programId]
+
+    CheckpointSignRequest:
+      type: object
+      description: Payload to sign off on a checkpoint.
+      properties:
+        notes:
+          type: string
+          maxLength: 1000
+          description: Optional notes about the completion.
+
+    PagedCohortProgramAssignments:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/CohortProgramAssignmentDetail" }
+      required: [meta, data]
+
+    PagedLearnerProgramAssignments:
+      type: object
+      properties:
+        meta: { $ref: "#/components/schemas/PagedMeta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/LearnerProgramAssignmentDetail" }
       required: [meta, data]
