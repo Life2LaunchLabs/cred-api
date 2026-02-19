@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Badging App API (v0)
-  version: 0.2.0
+  version: 0.2.1
   description: >
     v0 OpenAPI spec for org/staff/learner/badge/collection management with JWT auth + RBAC.
     Auth is enforced by required permissions (vendor extension `x-permissions`) and org-scope checks.
@@ -3206,17 +3206,38 @@ components:
           type: integer
           description: Display order within the program (0-indexed).
           example: 0
-        badgeIds:
+        badges:
           type: array
-          description: List of badge IDs included in this phase.
-          items:
-            type: string
-            example: "bdg_abc123"
+          description: Badges included in this phase, with collection context for linking.
+          items: { $ref: "#/components/schemas/PhaseBadge" }
         checkpoints:
           type: array
           description: Checkpoints that must be signed off in this phase.
           items: { $ref: "#/components/schemas/Checkpoint" }
-      required: [id, name, order, badgeIds, checkpoints]
+      required: [id, name, order, badges, checkpoints]
+
+    PhaseBadge:
+      type: object
+      description: A badge within a program phase, including collection context for constructing badge detail links.
+      properties:
+        id:
+          type: string
+          description: Badge identifier.
+          example: "bdg_abc123"
+        name:
+          type: string
+          description: Badge display name.
+          example: "OSHA 10-Hour General Industry"
+        collectionId:
+          type: string
+          description: Collection this badge belongs to (used to construct badge detail URLs).
+          example: "col_abc123"
+        imageUrl:
+          type: string
+          format: uri
+          description: Badge image URL.
+          example: "https://cdn.example.com/badges/osha.png"
+      required: [id, name, collectionId]
 
     Checkpoint:
       type: object
