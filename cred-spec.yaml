@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Badging App API (v0)
-  version: 0.2.1
+  version: 0.2.2
   description: >
     v0 OpenAPI spec for org/staff/learner/badge/collection management with JWT auth + RBAC.
     Auth is enforced by required permissions (vendor extension `x-permissions`) and org-scope checks.
@@ -2382,6 +2382,32 @@ components:
           description: Learner's email address (may be null for externally provisioned learners).
           example: "alex@example.com"
         createdAt: { $ref: "#/components/schemas/ISODateTime" }
+        slug:
+          type: string
+          description: URL-friendly identifier for the learner.
+          example: "alex-rivera"
+        profileImageUrl:
+          type: string
+          format: uri
+          description: Learner's profile photo URL.
+          example: "https://cdn.example.com/avatars/alex-rivera.jpg"
+        coverImageUrl:
+          type: string
+          format: uri
+          description: Learner's profile cover image URL.
+          example: "https://cdn.example.com/covers/alex-rivera.jpg"
+        bio:
+          type: string
+          description: Short biography or about text.
+          example: "Lifelong learner passionate about technology and education."
+        title:
+          type: string
+          description: Job title or role.
+          example: "Software Engineer"
+        location:
+          type: string
+          description: City or region.
+          example: "Austin, TX"
       required: [id]
 
     OrgLearner:
