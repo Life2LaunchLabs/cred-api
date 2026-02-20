@@ -1,0 +1,132 @@
+{
+  "cohorts": [
+    {
+      "id": "coh_1",
+      "orgId": "org_1",
+      "name": "Fall 2025 Cohort",
+      "slug": "fall-2025-cohort",
+      "description": "Full-time learners starting in Fall 2025 semester.",
+      "status": "active",
+      "coverImageUrl": "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=400&h=300&fit=crop",
+      "assignedStaffIds": ["mem_1", "mem_4"],
+      "learnerCount": 8,
+      "createdAt": "2025-09-01T08:00:00Z",
+      "updatedAt": "2025-09-05T10:00:00Z"
+    },
+    {
+      "id": "coh_2",
+      "orgId": "org_1",
+      "name": "Safety Training Cohort",
+      "slug": "safety-training-cohort",
+      "description": "Focused on OSHA and workplace safety certifications.",
+      "status": "active",
+      "coverImageUrl": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=400&h=300&fit=crop",
+      "assignedStaffIds": ["mem_5"],
+      "learnerCount": 6,
+      "createdAt": "2025-08-15T09:00:00Z",
+      "updatedAt": "2025-08-20T11:00:00Z"
+    },
+    {
+      "id": "coh_3",
+      "orgId": "org_1",
+      "name": "Technical Skills Track",
+      "slug": "technical-skills-track",
+      "description": "Learners pursuing technical badges (Git, Docker, Cloud, APIs).",
+      "status": "active",
+      "coverImageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop",
+      "assignedStaffIds": ["mem_1", "mem_4", "mem_5"],
+      "learnerCount": 5,
+      "createdAt": "2025-07-10T10:00:00Z",
+      "updatedAt": "2025-08-01T12:00:00Z"
+    },
+    {
+      "id": "coh_4",
+      "orgId": "org_1",
+      "name": "Onboarding - Q4 2025",
+      "slug": "onboarding-q4-2025",
+      "description": "New hires onboarding in Q4 2025.",
+      "status": "active",
+      "coverImageUrl": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop",
+      "assignedStaffIds": ["mem_4"],
+      "learnerCount": 4,
+      "createdAt": "2025-10-01T08:00:00Z",
+      "updatedAt": "2025-10-05T09:00:00Z"
+    },
+    {
+      "id": "coh_5",
+      "orgId": "org_1",
+      "name": "Spring 2026 Cohort",
+      "slug": "spring-2026-cohort",
+      "description": "Planned cohort for Spring 2026 semester (draft).",
+      "status": "draft",
+      "coverImageUrl": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&h=300&fit=crop",
+      "assignedStaffIds": [],
+      "learnerCount": 0,
+      "createdAt": "2025-11-01T08:00:00Z",
+      "updatedAt": "2025-11-02T09:00:00Z"
+    },
+    {
+      "id": "coh_6",
+      "orgId": "org_1",
+      "name": "Leadership Development Track",
+      "slug": "leadership-development-track",
+      "description": "Cohort for mid-level managers pursuing leadership badges (under development).",
+      "status": "draft",
+      "coverImageUrl": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&h=300&fit=crop",
+      "assignedStaffIds": ["mem_1"],
+      "learnerCount": 0,
+      "createdAt": "2025-10-15T10:00:00Z",
+      "updatedAt": "2025-10-20T11:00:00Z"
+    },
+    {
+      "id": "coh_7",
+      "orgId": "org_1",
+      "name": "Summer 2025 Cohort",
+      "slug": "summer-2025-cohort",
+      "description": "Completed summer 2025 program.",
+      "status": "archived",
+      "coverImageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=300&fit=crop",
+      "assignedStaffIds": ["mem_4", "mem_5"],
+      "learnerCount": 12,
+      "createdAt": "2025-06-01T08:00:00Z",
+      "updatedAt": "2025-08-31T17:00:00Z"
+    },
+    {
+      "id": "coh_8",
+      "orgId": "org_2",
+      "name": "Professional Dev Track",
+      "slug": "professional-dev-track",
+      "description": "Continuous learning for career advancement.",
+      "status": "active",
+      "coverImageUrl": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=300&fit=crop",
+      "assignedStaffIds": ["mem_2", "mem_7"],
+      "learnerCount": 15,
+      "createdAt": "2025-08-01T08:00:00Z",
+      "updatedAt": "2025-09-01T10:00:00Z"
+    },
+    {
+      "id": "coh_9",
+      "orgId": "org_2",
+      "name": "Leadership Cohort 2025",
+      "slug": "leadership-cohort-2025",
+      "description": "Executive leadership development program.",
+      "status": "active",
+      "coverImageUrl": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&h=300&fit=crop",
+      "assignedStaffIds": ["mem_7"],
+      "learnerCount": 8,
+      "createdAt": "2025-09-15T08:00:00Z",
+      "updatedAt": "2025-10-01T09:00:00Z"
+    }
+  ],
+  "cohortLearnerIds": {
+    "coh_1": ["lrn_1", "lrn_2", "lrn_3", "lrn_4", "lrn_5", "lrn_6", "lrn_7", "lrn_8"],
+    "coh_2": ["lrn_9", "lrn_10", "lrn_11", "lrn_12", "lrn_13", "lrn_14"],
+    "coh_3": ["lrn_15", "lrn_16", "lrn_17", "lrn_18", "lrn_1"],
+    "coh_4": ["lrn_2", "lrn_4", "lrn_6", "lrn_8"],
+    "coh_5": [],
+    "coh_6": [],
+    "coh_7": ["lrn_3", "lrn_5", "lrn_7", "lrn_9", "lrn_11", "lrn_13", "lrn_15", "lrn_17", "lrn_10", "lrn_12", "lrn_14", "lrn_16"],
+    "coh_8": ["lrn_1", "lrn_2", "lrn_3", "lrn_4", "lrn_5", "lrn_6", "lrn_7", "lrn_8", "lrn_9", "lrn_10", "lrn_11", "lrn_12", "lrn_13", "lrn_14", "lrn_15"],
+    "coh_9": ["lrn_16", "lrn_17", "lrn_18", "lrn_1", "lrn_3", "lrn_5", "lrn_7", "lrn_9"]
+  }
+}

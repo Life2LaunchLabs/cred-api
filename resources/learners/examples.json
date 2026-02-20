@@ -1,0 +1,179 @@
+{
+  "learners": [
+    {
+      "id": "lrn_1",
+      "slug": "alex-rivera",
+      "name": "Alex Rivera",
+      "email": "alex.rivera@example.com",
+      "createdAt": "2024-01-15T08:00:00Z",
+      "profileImageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=256&h=256&fit=crop&crop=face",
+      "coverImageUrl": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&h=400&fit=crop",
+      "title": "Junior Software Developer",
+      "location": "Austin, TX",
+      "bio": "Self-taught developer transitioning into tech after 5 years in logistics. Passionate about building tools that make work easier for people on the ground."
+    },
+    {
+      "id": "lrn_2",
+      "slug": "jordan-smith",
+      "name": "Jordan Smith",
+      "email": "jordan.smith@example.com",
+      "createdAt": "2024-01-20T09:00:00Z",
+      "profileImageUrl": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=256&h=256&fit=crop&crop=face",
+      "coverImageUrl": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=400&fit=crop",
+      "title": "Operations Associate",
+      "location": "Denver, CO",
+      "bio": "Operations professional focused on process improvement and team efficiency. Currently pursuing safety and leadership credentials."
+    },
+    {
+      "id": "lrn_3",
+      "slug": "taylor-johnson",
+      "name": "Taylor Johnson",
+      "email": "taylor.johnson@example.com",
+      "createdAt": "2024-02-05T10:00:00Z",
+      "profileImageUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=256&h=256&fit=crop&crop=face",
+      "coverImageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=400&fit=crop",
+      "title": "Project Coordinator",
+      "location": "Chicago, IL",
+      "bio": "Experienced coordinator with a background in construction and infrastructure projects. Working toward PMP certification."
+    },
+    {
+      "id": "lrn_4",
+      "slug": "morgan-lee",
+      "name": "Morgan Lee",
+      "email": "morgan.lee@example.com",
+      "createdAt": "2024-02-10T11:00:00Z",
+      "profileImageUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=256&h=256&fit=crop&crop=face",
+      "title": "Warehouse Supervisor",
+      "location": "Houston, TX",
+      "bio": "Warehouse and logistics supervisor with 8 years of experience in supply chain operations."
+    },
+    {
+      "id": "lrn_5",
+      "slug": "casey-brown",
+      "name": "Casey Brown",
+      "email": "casey.brown@example.com",
+      "createdAt": "2024-02-15T12:00:00Z",
+      "title": "Safety Officer",
+      "location": "Phoenix, AZ"
+    },
+    {
+      "id": "lrn_6",
+      "slug": "riley-garcia",
+      "name": "Riley Garcia",
+      "email": "riley.garcia@example.com",
+      "createdAt": "2024-03-01T08:00:00Z",
+      "profileImageUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=256&h=256&fit=crop&crop=face",
+      "title": "HR Generalist",
+      "location": "San Antonio, TX",
+      "bio": "HR professional building skills in compliance and workforce development to better support employees through credentialing programs."
+    },
+    {
+      "id": "lrn_7",
+      "slug": "jamie-martinez",
+      "name": "Jamie Martinez",
+      "email": "jamie.martinez@example.com",
+      "createdAt": "2024-03-05T09:00:00Z",
+      "title": "Team Lead",
+      "location": "Dallas, TX"
+    },
+    {
+      "id": "lrn_8",
+      "slug": "avery-davis",
+      "name": "Avery Davis",
+      "email": "avery.davis@example.com",
+      "createdAt": "2024-03-10T10:00:00Z",
+      "title": "Field Technician",
+      "location": "Austin, TX"
+    },
+    {
+      "id": "lrn_9",
+      "slug": "quinn-rodriguez",
+      "name": "Quinn Rodriguez",
+      "email": "quinn.rodriguez@example.com",
+      "createdAt": "2024-03-15T11:00:00Z",
+      "title": "Quality Analyst",
+      "location": "El Paso, TX"
+    },
+    {
+      "id": "lrn_10",
+      "slug": "drew-wilson",
+      "name": "Drew Wilson",
+      "email": "drew.wilson@example.com",
+      "createdAt": "2024-04-01T08:00:00Z",
+      "title": "Compliance Specialist",
+      "location": "Nashville, TN"
+    },
+    {
+      "id": "lrn_11",
+      "slug": "dakota-anderson",
+      "name": "Dakota Anderson",
+      "email": "dakota.anderson@example.com",
+      "createdAt": "2024-04-05T09:00:00Z",
+      "title": "Equipment Operator",
+      "location": "Portland, OR"
+    },
+    {
+      "id": "lrn_12",
+      "slug": "cameron-thomas",
+      "name": "Cameron Thomas",
+      "email": "cameron.thomas@example.com",
+      "createdAt": "2024-04-10T10:00:00Z",
+      "title": "Maintenance Technician",
+      "location": "Seattle, WA"
+    },
+    {
+      "id": "lrn_13",
+      "slug": "sage-jackson",
+      "name": "Sage Jackson",
+      "email": "sage.jackson@example.com",
+      "createdAt": "2024-04-15T11:00:00Z",
+      "title": "Training Coordinator",
+      "location": "Boston, MA"
+    },
+    {
+      "id": "lrn_14",
+      "slug": "river-white",
+      "name": "River White",
+      "email": "river.white@example.com",
+      "createdAt": "2024-05-01T08:00:00Z",
+      "title": "Administrative Assistant",
+      "location": "Miami, FL"
+    },
+    {
+      "id": "lrn_15",
+      "slug": "skyler-harris",
+      "name": "Skyler Harris",
+      "email": "skyler.harris@example.com",
+      "createdAt": "2024-05-05T09:00:00Z",
+      "title": "Forklift Operator",
+      "location": "Detroit, MI"
+    },
+    {
+      "id": "lrn_16",
+      "slug": "phoenix-martin",
+      "name": "Phoenix Martin",
+      "email": "phoenix.martin@example.com",
+      "createdAt": "2024-05-10T10:00:00Z",
+      "title": "Logistics Coordinator",
+      "location": "Minneapolis, MN"
+    },
+    {
+      "id": "lrn_17",
+      "slug": "rowan-thompson",
+      "name": "Rowan Thompson",
+      "email": "rowan.thompson@example.com",
+      "createdAt": "2024-05-15T11:00:00Z",
+      "title": "Safety Inspector",
+      "location": "Cleveland, OH"
+    },
+    {
+      "id": "lrn_18",
+      "slug": "indigo-moore",
+      "name": "Indigo Moore",
+      "email": "indigo.moore@example.com",
+      "createdAt": "2024-06-01T08:00:00Z",
+      "title": "Environmental Health Specialist",
+      "location": "Sacramento, CA"
+    }
+  ]
+}

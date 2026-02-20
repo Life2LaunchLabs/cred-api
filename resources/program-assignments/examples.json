@@ -1,0 +1,185 @@
+{
+  "cohortAssignments": {
+    "coh_1": [
+      {
+        "id": "asn_coh_1",
+        "cohortId": "coh_1",
+        "programId": "prg_1",
+        "assignedBy": "usr_1",
+        "assignedAt": "2025-01-15T10:00:00Z",
+        "phaseDueDates": [
+          { "phaseId": "phs_1", "dueDate": "2025-03-01T23:59:59Z" },
+          { "phaseId": "phs_2", "dueDate": "2025-05-01T23:59:59Z" },
+          { "phaseId": "phs_3", "dueDate": "2025-07-01T23:59:59Z" }
+        ]
+      }
+    ],
+    "coh_7": [
+      {
+        "id": "asn_coh_2",
+        "cohortId": "coh_7",
+        "programId": "prg_2",
+        "assignedBy": "usr_1",
+        "assignedAt": "2024-12-01T09:00:00Z",
+        "phaseDueDates": [
+          { "phaseId": "phs_4", "dueDate": "2025-02-15T23:59:59Z" },
+          { "phaseId": "phs_5", "dueDate": "2025-04-15T23:59:59Z" },
+          { "phaseId": "phs_6", "dueDate": "2025-06-15T23:59:59Z" },
+          { "phaseId": "phs_7", "dueDate": "2025-08-15T23:59:59Z" }
+        ]
+      }
+    ]
+  },
+  "learnerAssignments": {
+    "lrn_1": [
+      {
+        "id": "asn_lrn_1",
+        "learnerId": "lrn_1",
+        "programId": "prg_1",
+        "cohortAssignmentId": "asn_coh_1",
+        "assignedBy": "usr_1",
+        "assignedAt": "2025-01-15T10:00:00Z",
+        "phaseDueDates": [
+          { "phaseId": "phs_1", "dueDate": "2025-03-01T23:59:59Z" },
+          { "phaseId": "phs_2", "dueDate": "2025-05-01T23:59:59Z" },
+          { "phaseId": "phs_3", "dueDate": "2025-07-01T23:59:59Z" }
+        ]
+      }
+    ],
+    "lrn_2": [
+      {
+        "id": "asn_lrn_2",
+        "learnerId": "lrn_2",
+        "programId": "prg_1",
+        "cohortAssignmentId": "asn_coh_1",
+        "assignedBy": "usr_1",
+        "assignedAt": "2025-01-15T10:00:00Z",
+        "phaseDueDates": [
+          { "phaseId": "phs_1", "dueDate": "2025-03-01T23:59:59Z" },
+          { "phaseId": "phs_2", "dueDate": "2025-05-01T23:59:59Z" },
+          { "phaseId": "phs_3", "dueDate": "2025-07-01T23:59:59Z" }
+        ]
+      }
+    ],
+    "lrn_3": [
+      {
+        "id": "asn_lrn_3",
+        "learnerId": "lrn_3",
+        "programId": "prg_1",
+        "cohortAssignmentId": "asn_coh_1",
+        "assignedBy": "usr_1",
+        "assignedAt": "2025-01-15T10:00:00Z",
+        "phaseDueDates": [
+          { "phaseId": "phs_1", "dueDate": "2025-03-01T23:59:59Z" },
+          { "phaseId": "phs_2", "dueDate": "2025-05-01T23:59:59Z" },
+          { "phaseId": "phs_3", "dueDate": "2025-07-01T23:59:59Z" }
+        ]
+      },
+      {
+        "id": "asn_lrn_3b",
+        "learnerId": "lrn_3",
+        "programId": "prg_2",
+        "assignedBy": "usr_1",
+        "assignedAt": "2025-02-01T14:00:00Z",
+        "phaseDueDates": [
+          { "phaseId": "phs_4", "dueDate": "2025-03-15T23:59:59Z" },
+          { "phaseId": "phs_5", "dueDate": "2025-05-15T23:59:59Z" },
+          { "phaseId": "phs_6", "dueDate": "2025-07-15T23:59:59Z" },
+          { "phaseId": "phs_7", "dueDate": "2025-09-15T23:59:59Z" }
+        ]
+      }
+    ],
+    "lrn_4": [
+      {
+        "id": "asn_lrn_4",
+        "learnerId": "lrn_4",
+        "programId": "prg_1",
+        "cohortAssignmentId": "asn_coh_1",
+        "assignedBy": "usr_1",
+        "assignedAt": "2025-01-15T10:00:00Z",
+        "phaseDueDates": [
+          { "phaseId": "phs_1", "dueDate": "2025-03-01T23:59:59Z" },
+          { "phaseId": "phs_2", "dueDate": "2025-05-01T23:59:59Z" },
+          { "phaseId": "phs_3", "dueDate": "2025-07-01T23:59:59Z" }
+        ]
+      }
+    ],
+    "lrn_5": [
+      {
+        "id": "asn_lrn_5",
+        "learnerId": "lrn_5",
+        "programId": "prg_1",
+        "cohortAssignmentId": "asn_coh_1",
+        "assignedBy": "usr_1",
+        "assignedAt": "2025-01-15T10:00:00Z",
+        "phaseDueDates": [
+          { "phaseId": "phs_1", "dueDate": "2025-03-01T23:59:59Z" },
+          { "phaseId": "phs_2", "dueDate": "2025-05-01T23:59:59Z" },
+          { "phaseId": "phs_3", "dueDate": "2025-07-01T23:59:59Z" }
+        ]
+      }
+    ],
+    "lrn_6": [
+      {
+        "id": "asn_lrn_6",
+        "learnerId": "lrn_6",
+        "programId": "prg_1",
+        "cohortAssignmentId": "asn_coh_1",
+        "assignedBy": "usr_1",
+        "assignedAt": "2025-01-15T10:00:00Z",
+        "phaseDueDates": [
+          { "phaseId": "phs_1", "dueDate": "2025-03-01T23:59:59Z" },
+          { "phaseId": "phs_2", "dueDate": "2025-05-01T23:59:59Z" },
+          { "phaseId": "phs_3", "dueDate": "2025-07-01T23:59:59Z" }
+        ]
+      }
+    ]
+  },
+  "checkpointCompletions": {
+    "asn_lrn_1": [
+      { "id": "chk_cmp_1", "assignmentId": "asn_lrn_1", "checkpointId": "chk_1", "signedBy": "usr_1", "signedAt": "2025-02-10T15:30:00Z", "notes": "Excellent self-assessment. Shows strong self-awareness." },
+      { "id": "chk_cmp_2", "assignmentId": "asn_lrn_1", "checkpointId": "chk_2", "signedBy": "usr_1", "signedAt": "2025-02-25T11:00:00Z", "notes": "Clear and actionable development plan submitted." },
+      { "id": "chk_cmp_5", "assignmentId": "asn_lrn_1", "checkpointId": "chk_3", "signedBy": "usr_1", "signedAt": "2025-03-15T10:00:00Z", "notes": "Team project simulation completed with distinction." }
+    ],
+    "asn_lrn_2": [
+      { "id": "chk_cmp_3", "assignmentId": "asn_lrn_2", "checkpointId": "chk_1", "signedBy": "usr_1", "signedAt": "2025-02-12T09:15:00Z" }
+    ],
+    "asn_lrn_3": [
+      { "id": "chk_cmp_6", "assignmentId": "asn_lrn_3", "checkpointId": "chk_1", "signedBy": "usr_1", "signedAt": "2025-02-08T11:00:00Z" },
+      { "id": "chk_cmp_7", "assignmentId": "asn_lrn_3", "checkpointId": "chk_2", "signedBy": "usr_1", "signedAt": "2025-02-20T14:00:00Z" }
+    ],
+    "asn_lrn_3b": [
+      { "id": "chk_cmp_8", "assignmentId": "asn_lrn_3b", "checkpointId": "chk_7", "signedBy": "usr_1", "signedAt": "2025-02-08T16:45:00Z", "notes": "Passed exam with 92%. Strong grasp of fundamentals." }
+    ],
+    "asn_lrn_4": [
+      { "id": "chk_cmp_9", "assignmentId": "asn_lrn_4", "checkpointId": "chk_1", "signedBy": "usr_1", "signedAt": "2025-02-18T10:00:00Z" }
+    ],
+    "asn_lrn_5": [],
+    "asn_lrn_6": [
+      { "id": "chk_cmp_10", "assignmentId": "asn_lrn_6", "checkpointId": "chk_1", "signedBy": "usr_1", "signedAt": "2025-02-05T09:00:00Z" },
+      { "id": "chk_cmp_11", "assignmentId": "asn_lrn_6", "checkpointId": "chk_2", "signedBy": "usr_1", "signedAt": "2025-02-14T11:00:00Z" },
+      { "id": "chk_cmp_12", "assignmentId": "asn_lrn_6", "checkpointId": "chk_3", "signedBy": "usr_1", "signedAt": "2025-03-01T10:00:00Z" },
+      { "id": "chk_cmp_13", "assignmentId": "asn_lrn_6", "checkpointId": "chk_4", "signedBy": "usr_1", "signedAt": "2025-03-10T14:00:00Z" }
+    ]
+  },
+  "learnerBadgeProgress": {
+    "lrn_1": [
+      { "orgId": "org_1", "learnerId": "lrn_1", "badgeId": "bdg_1", "status": "complete",     "updatedAt": "2025-02-10T15:30:00Z" },
+      { "orgId": "org_1", "learnerId": "lrn_1", "badgeId": "bdg_2", "status": "complete",     "updatedAt": "2025-02-25T11:00:00Z" },
+      { "orgId": "org_1", "learnerId": "lrn_1", "badgeId": "bdg_3", "status": "in_progress",  "updatedAt": "2025-03-10T09:00:00Z" }
+    ],
+    "lrn_2": [
+      { "orgId": "org_1", "learnerId": "lrn_2", "badgeId": "bdg_1", "status": "complete",     "updatedAt": "2025-02-12T09:15:00Z" }
+    ],
+    "lrn_3": [
+      { "orgId": "org_1", "learnerId": "lrn_3", "badgeId": "bdg_1", "status": "complete",     "updatedAt": "2025-02-09T10:00:00Z" },
+      { "orgId": "org_1", "learnerId": "lrn_3", "badgeId": "bdg_2", "status": "complete",     "updatedAt": "2025-02-21T12:00:00Z" }
+    ],
+    "lrn_6": [
+      { "orgId": "org_1", "learnerId": "lrn_6", "badgeId": "bdg_1", "status": "complete",     "updatedAt": "2025-02-06T09:00:00Z" },
+      { "orgId": "org_1", "learnerId": "lrn_6", "badgeId": "bdg_2", "status": "complete",     "updatedAt": "2025-02-15T10:00:00Z" },
+      { "orgId": "org_1", "learnerId": "lrn_6", "badgeId": "bdg_3", "status": "complete",     "updatedAt": "2025-03-02T11:00:00Z" },
+      { "orgId": "org_1", "learnerId": "lrn_6", "badgeId": "bdg_4", "status": "in_progress",  "updatedAt": "2025-03-12T09:00:00Z" }
+    ]
+  }
+}

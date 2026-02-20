@@ -1,0 +1,26 @@
+{
+  "credentials": {
+    "email": "user@fake.com",
+    "password": "12345678"
+  },
+  "auth": {
+    "accessToken": "fake-jwt-access-token",
+    "refreshToken": "fake-jwt-refresh-token"
+  },
+  "primaryUser": {
+    "id": "usr_1",
+    "email": "user@fake.com",
+    "name": "Fake User",
+    "profileImageUrl": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=256&h=256&fit=crop&crop=face",
+    "coverImageUrl": "https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=400&fit=crop",
+    "bio": "Credentialing specialist with 8+ years of experience in open badges, micro-credentials, and workforce development. Passionate about making skills visible and verifiable.",
+    "title": "Director of Credentialing",
+    "location": "Austin, TX",
+    "socialLinks": {
+      "linkedin": "https://linkedin.com/in/fakeuser",
+      "website": "https://fakeuser.dev",
+      "x": "https://x.com/fakeuser"
+    },
+    "createdAt": "2024-03-15T10:30:00Z"
+  }
+}

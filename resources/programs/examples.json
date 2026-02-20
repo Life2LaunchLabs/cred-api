@@ -1,0 +1,285 @@
+{
+  "programs": {
+    "prg_1": {
+      "id": "prg_1",
+      "orgId": "org_1",
+      "name": "Leadership Development Track",
+      "slug": "leadership-development-track",
+      "description": "Comprehensive leadership training program spanning foundation to advanced competencies. Perfect for emerging and established leaders.",
+      "imageUrl": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=400&fit=crop",
+      "status": "active",
+      "phaseCount": 3,
+      "totalBadgeCount": 9,
+      "totalCheckpointCount": 6,
+      "createdAt": "2024-09-01T10:00:00Z",
+      "updatedAt": "2025-01-10T14:30:00Z"
+    },
+    "prg_2": {
+      "id": "prg_2",
+      "orgId": "org_1",
+      "name": "Project Management Certification",
+      "slug": "project-management-certification",
+      "description": "Industry-standard project management training aligned with PMI standards.",
+      "imageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&h=400&fit=crop",
+      "status": "active",
+      "phaseCount": 4,
+      "totalBadgeCount": 12,
+      "totalCheckpointCount": 8,
+      "createdAt": "2024-08-15T09:00:00Z",
+      "updatedAt": "2024-12-20T16:00:00Z"
+    },
+    "prg_3": {
+      "id": "prg_3",
+      "orgId": "org_1",
+      "name": "Data Analysis Fundamentals",
+      "slug": "data-analysis-fundamentals",
+      "description": "Introduction to data analysis techniques and tools.",
+      "status": "draft",
+      "phaseCount": 2,
+      "totalBadgeCount": 5,
+      "totalCheckpointCount": 3,
+      "createdAt": "2025-01-05T11:00:00Z",
+      "updatedAt": "2025-02-01T10:00:00Z"
+    },
+    "prg_4": {
+      "id": "prg_4",
+      "orgId": "org_1",
+      "name": "Summer 2024 Internship Program",
+      "slug": "summer-2024-internship",
+      "description": "Legacy internship program from summer 2024.",
+      "status": "archived",
+      "phaseCount": 2,
+      "totalBadgeCount": 4,
+      "totalCheckpointCount": 4,
+      "createdAt": "2024-05-01T08:00:00Z",
+      "updatedAt": "2024-09-30T17:00:00Z"
+    },
+    "prg_5": {
+      "id": "prg_5",
+      "orgId": "org_2",
+      "name": "Teaching Excellence Program",
+      "slug": "teaching-excellence-program",
+      "description": "Professional development for educators.",
+      "status": "active",
+      "phaseCount": 3,
+      "totalBadgeCount": 8,
+      "totalCheckpointCount": 5,
+      "createdAt": "2024-10-01T09:00:00Z",
+      "updatedAt": "2025-01-15T12:00:00Z"
+    }
+  },
+  "programPhases": {
+    "prg_1": [
+      {
+        "id": "phs_1",
+        "name": "Foundation Leadership Skills",
+        "description": "Core competencies every leader needs.",
+        "order": 0,
+        "badges": [
+          { "id": "bdg_1", "name": "OSHA 10-Hour General Industry", "collectionId": "col_1", "imageUrl": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=128&h=128&fit=crop" },
+          { "id": "bdg_2", "name": "Fire Safety Awareness", "collectionId": "col_1", "imageUrl": "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=128&h=128&fit=crop" },
+          { "id": "bdg_3", "name": "Hazard Communication", "collectionId": "col_1", "imageUrl": "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=128&h=128&fit=crop" }
+        ],
+        "checkpoints": [
+          { "id": "chk_1", "label": "Complete personal leadership assessment", "isRequired": true },
+          { "id": "chk_2", "label": "Submit leadership development plan", "isRequired": true }
+        ]
+      },
+      {
+        "id": "phs_2",
+        "name": "Team Leadership",
+        "description": "Leading and developing high-performing teams.",
+        "order": 1,
+        "badges": [
+          { "id": "bdg_4", "name": "PPE Compliance", "collectionId": "col_1", "imageUrl": "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=128&h=128&fit=crop" },
+          { "id": "bdg_5", "name": "Emergency Response", "collectionId": "col_1", "imageUrl": "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=128&h=128&fit=crop" },
+          { "id": "bdg_6", "name": "Ergonomics Fundamentals", "collectionId": "col_1", "imageUrl": "https://images.unsplash.com/photo-1551434678-e076c223a692?w=128&h=128&fit=crop" }
+        ],
+        "checkpoints": [
+          { "id": "chk_3", "label": "Complete team project simulation", "isRequired": true },
+          { "id": "chk_4", "label": "Conduct peer feedback session", "isRequired": true }
+        ]
+      },
+      {
+        "id": "phs_3",
+        "name": "Strategic Leadership",
+        "description": "Advanced strategic thinking and organizational leadership.",
+        "order": 2,
+        "badges": [
+          { "id": "bdg_7", "name": "Git Version Control", "collectionId": "col_2", "imageUrl": "https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=128&h=128&fit=crop" },
+          { "id": "bdg_8", "name": "REST API Design", "collectionId": "col_2", "imageUrl": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=128&h=128&fit=crop" },
+          { "id": "bdg_9", "name": "Cloud Fundamentals", "collectionId": "col_2", "imageUrl": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=128&h=128&fit=crop" }
+        ],
+        "checkpoints": [
+          { "id": "chk_5", "label": "Present strategic vision to panel", "isRequired": true },
+          { "id": "chk_6", "label": "Complete capstone project", "isRequired": true }
+        ]
+      }
+    ],
+    "prg_2": [
+      {
+        "id": "phs_4",
+        "name": "PM Fundamentals",
+        "description": "Core project management principles.",
+        "order": 0,
+        "badges": [
+          { "id": "bdg_10", "name": "Docker Containers", "collectionId": "col_2", "imageUrl": "https://images.unsplash.com/photo-1605745341112-85968b19335b?w=128&h=128&fit=crop" },
+          { "id": "bdg_11", "name": "Company Culture", "collectionId": "col_3", "imageUrl": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=128&h=128&fit=crop" },
+          { "id": "bdg_12", "name": "Systems Access", "collectionId": "col_3", "imageUrl": "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=128&h=128&fit=crop" }
+        ],
+        "checkpoints": [
+          { "id": "chk_7", "label": "Pass PM fundamentals exam", "isRequired": true }
+        ]
+      },
+      {
+        "id": "phs_5",
+        "name": "Planning & Execution",
+        "description": "Project planning, scheduling, and execution techniques.",
+        "order": 1,
+        "badges": [
+          { "id": "bdg_13", "name": "Security Basics", "collectionId": "col_3", "imageUrl": "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=128&h=128&fit=crop" },
+          { "id": "bdg_14", "name": "Benefits Orientation", "collectionId": "col_3", "imageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=128&h=128&fit=crop" },
+          { "id": "bdg_15", "name": "Communication Skills", "collectionId": "col_4", "imageUrl": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=128&h=128&fit=crop" }
+        ],
+        "checkpoints": [
+          { "id": "chk_8", "label": "Create project charter", "isRequired": true },
+          { "id": "chk_9", "label": "Develop project schedule", "isRequired": true }
+        ]
+      },
+      {
+        "id": "phs_6",
+        "name": "Risk & Quality Management",
+        "description": "Managing project risks and ensuring quality.",
+        "order": 2,
+        "badges": [
+          { "id": "bdg_16", "name": "Strategic Thinking", "collectionId": "col_4", "imageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=128&h=128&fit=crop" },
+          { "id": "bdg_17", "name": "Team Management", "collectionId": "col_4", "imageUrl": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=128&h=128&fit=crop" },
+          { "id": "bdg_18", "name": "Time Management", "collectionId": "col_5", "imageUrl": "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=128&h=128&fit=crop" }
+        ],
+        "checkpoints": [
+          { "id": "chk_10", "label": "Complete risk assessment", "isRequired": true },
+          { "id": "chk_11", "label": "Implement quality control plan", "isRequired": true }
+        ]
+      },
+      {
+        "id": "phs_7",
+        "name": "Leadership & Communication",
+        "description": "Stakeholder management and team communication.",
+        "order": 3,
+        "badges": [
+          { "id": "bdg_19", "name": "Public Speaking", "collectionId": "col_5", "imageUrl": "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=128&h=128&fit=crop" },
+          { "id": "bdg_20", "name": "Conflict Resolution", "collectionId": "col_5", "imageUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=128&h=128&fit=crop" },
+          { "id": "bdg_21", "name": "Computer Basics", "collectionId": "col_6", "imageUrl": "https://images.unsplash.com/photo-1484788984921-03950022c9ef?w=128&h=128&fit=crop" }
+        ],
+        "checkpoints": [
+          { "id": "chk_12", "label": "Facilitate stakeholder meeting", "isRequired": true },
+          { "id": "chk_13", "label": "Deliver final project presentation", "isRequired": true }
+        ]
+      }
+    ],
+    "prg_3": [
+      {
+        "id": "phs_8",
+        "name": "Data Basics",
+        "description": "Introduction to data analysis.",
+        "order": 0,
+        "badges": [
+          { "id": "bdg_22", "name": "Email Communication", "collectionId": "col_6", "imageUrl": "https://images.unsplash.com/photo-1557200134-90327ee9fafa?w=128&h=128&fit=crop" },
+          { "id": "bdg_23", "name": "Online Safety", "collectionId": "col_6", "imageUrl": "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=128&h=128&fit=crop" }
+        ],
+        "checkpoints": [
+          { "id": "chk_14", "label": "Complete data literacy quiz", "isRequired": true }
+        ]
+      },
+      {
+        "id": "phs_9",
+        "name": "Analysis Tools",
+        "description": "Working with data analysis tools.",
+        "order": 1,
+        "badges": [
+          { "id": "bdg_24", "name": "HIPAA Compliance", "collectionId": "col_7", "imageUrl": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=128&h=128&fit=crop" },
+          { "id": "bdg_25", "name": "SOX Reporting", "collectionId": "col_7", "imageUrl": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=128&h=128&fit=crop" },
+          { "id": "bdg_26", "name": "GDPR Fundamentals", "collectionId": "col_7", "imageUrl": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=128&h=128&fit=crop" }
+        ],
+        "checkpoints": [
+          { "id": "chk_15", "label": "Submit data analysis project", "isRequired": true },
+          { "id": "chk_16", "label": "Present findings to team", "isRequired": false }
+        ]
+      }
+    ],
+    "prg_4": [
+      {
+        "id": "phs_10",
+        "name": "Onboarding",
+        "description": "Intern orientation and setup.",
+        "order": 0,
+        "badges": [
+          { "id": "bdg_27", "name": "Forklift Operation", "collectionId": "col_8", "imageUrl": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=128&h=128&fit=crop" }
+        ],
+        "checkpoints": [
+          { "id": "chk_17", "label": "Complete orientation", "isRequired": true },
+          { "id": "chk_18", "label": "Meet with mentor", "isRequired": true }
+        ]
+      },
+      {
+        "id": "phs_11",
+        "name": "Project Work",
+        "description": "Summer internship project completion.",
+        "order": 1,
+        "badges": [
+          { "id": "bdg_28", "name": "Crane Safety", "collectionId": "col_8", "imageUrl": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=128&h=128&fit=crop" },
+          { "id": "bdg_29", "name": "Equipment Inspection", "collectionId": "col_8", "imageUrl": "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=128&h=128&fit=crop" }
+        ],
+        "checkpoints": [
+          { "id": "chk_19", "label": "Mid-summer check-in", "isRequired": true },
+          { "id": "chk_20", "label": "Final presentation", "isRequired": true }
+        ]
+      }
+    ],
+    "prg_5": [
+      {
+        "id": "phs_12",
+        "name": "Teaching Foundations",
+        "description": "Core teaching methodologies.",
+        "order": 0,
+        "badges": [
+          { "id": "bdg_1", "name": "OSHA 10-Hour General Industry", "collectionId": "col_1", "imageUrl": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=128&h=128&fit=crop" },
+          { "id": "bdg_2", "name": "Fire Safety Awareness", "collectionId": "col_1", "imageUrl": "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=128&h=128&fit=crop" }
+        ],
+        "checkpoints": [
+          { "id": "chk_21", "label": "Observe master teacher session", "isRequired": true }
+        ]
+      },
+      {
+        "id": "phs_13",
+        "name": "Classroom Management",
+        "description": "Managing diverse classrooms effectively.",
+        "order": 1,
+        "badges": [
+          { "id": "bdg_3", "name": "Hazard Communication", "collectionId": "col_1", "imageUrl": "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=128&h=128&fit=crop" },
+          { "id": "bdg_4", "name": "PPE Compliance", "collectionId": "col_1", "imageUrl": "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=128&h=128&fit=crop" },
+          { "id": "bdg_5", "name": "Emergency Response", "collectionId": "col_1", "imageUrl": "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=128&h=128&fit=crop" }
+        ],
+        "checkpoints": [
+          { "id": "chk_22", "label": "Implement classroom management plan", "isRequired": true },
+          { "id": "chk_23", "label": "Peer observation feedback", "isRequired": true }
+        ]
+      },
+      {
+        "id": "phs_14",
+        "name": "Assessment & Growth",
+        "description": "Student assessment and professional development.",
+        "order": 2,
+        "badges": [
+          { "id": "bdg_6", "name": "Ergonomics Fundamentals", "collectionId": "col_1", "imageUrl": "https://images.unsplash.com/photo-1551434678-e076c223a692?w=128&h=128&fit=crop" },
+          { "id": "bdg_7", "name": "Git Version Control", "collectionId": "col_2", "imageUrl": "https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=128&h=128&fit=crop" },
+          { "id": "bdg_8", "name": "REST API Design", "collectionId": "col_2", "imageUrl": "https://images.unsplash.com/photo-1555066931-4365d14bamp8c?w=128&h=128&fit=crop" }
+        ],
+        "checkpoints": [
+          { "id": "chk_24", "label": "Create assessment rubric", "isRequired": true },
+          { "id": "chk_25", "label": "Complete professional development plan", "isRequired": true }
+        ]
+      }
+    ]
+  }
+}

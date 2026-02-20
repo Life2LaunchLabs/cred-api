@@ -1,0 +1,140 @@
+{
+  "membersByOrg": {
+    "org_1": [
+      {
+        "id": "mem_1",
+        "orgId": "org_1",
+        "userId": "usr_1",
+        "role": "owner",
+        "status": "active",
+        "createdAt": "2023-09-01T08:00:00Z",
+        "user": {
+          "id": "usr_1",
+          "email": "user@fake.com",
+          "name": "Fake User",
+          "profileImageUrl": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=256&h=256&fit=crop&crop=face",
+          "coverImageUrl": "https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=400&fit=crop",
+          "bio": "Credentialing specialist with 8+ years of experience in open badges, micro-credentials, and workforce development. Passionate about making skills visible and verifiable.",
+          "title": "Director of Credentialing",
+          "location": "Austin, TX",
+          "socialLinks": {
+            "linkedin": "https://linkedin.com/in/fakeuser",
+            "website": "https://fakeuser.dev",
+            "x": "https://x.com/fakeuser"
+          },
+          "createdAt": "2024-03-15T10:30:00Z"
+        }
+      },
+      {
+        "id": "mem_4",
+        "orgId": "org_1",
+        "userId": "usr_2",
+        "role": "admin",
+        "status": "active",
+        "createdAt": "2023-10-15T10:00:00Z",
+        "user": {
+          "id": "usr_2",
+          "email": "sarah@certrus.com",
+          "name": "Sarah Chen",
+          "profileImageUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=256&h=256&fit=crop&crop=face",
+          "title": "Program Manager"
+        }
+      },
+      {
+        "id": "mem_5",
+        "orgId": "org_1",
+        "userId": "usr_3",
+        "role": "issuer",
+        "status": "active",
+        "createdAt": "2024-02-01T09:00:00Z",
+        "user": {
+          "id": "usr_3",
+          "email": "mike@certrus.com",
+          "name": "Mike Rodriguez",
+          "title": "Badge Issuer"
+        }
+      },
+      {
+        "id": "mem_6",
+        "orgId": "org_1",
+        "userId": "usr_4",
+        "role": "viewer",
+        "status": "active",
+        "createdAt": "2024-06-10T11:00:00Z",
+        "user": {
+          "id": "usr_4",
+          "email": "emma@certrus.com",
+          "name": "Emma Williams",
+          "title": "Quality Reviewer"
+        }
+      }
+    ],
+    "org_2": [
+      {
+        "id": "mem_2",
+        "orgId": "org_2",
+        "userId": "usr_1",
+        "role": "admin",
+        "status": "active",
+        "createdAt": "2024-01-10T12:00:00Z",
+        "user": {
+          "id": "usr_1",
+          "email": "user@fake.com",
+          "name": "Fake User",
+          "profileImageUrl": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=256&h=256&fit=crop&crop=face",
+          "coverImageUrl": "https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=400&fit=crop",
+          "bio": "Credentialing specialist with 8+ years of experience in open badges, micro-credentials, and workforce development. Passionate about making skills visible and verifiable.",
+          "title": "Director of Credentialing",
+          "location": "Austin, TX",
+          "socialLinks": {
+            "linkedin": "https://linkedin.com/in/fakeuser",
+            "website": "https://fakeuser.dev",
+            "x": "https://x.com/fakeuser"
+          },
+          "createdAt": "2024-03-15T10:30:00Z"
+        }
+      },
+      {
+        "id": "mem_7",
+        "orgId": "org_2",
+        "userId": "usr_5",
+        "role": "owner",
+        "status": "active",
+        "createdAt": "2024-01-10T12:00:00Z",
+        "user": {
+          "id": "usr_5",
+          "email": "alex@edusystem.com",
+          "name": "Alex Thompson",
+          "profileImageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=256&h=256&fit=crop&crop=face",
+          "title": "Founder & CEO"
+        }
+      }
+    ],
+    "org_3": [
+      {
+        "id": "mem_3",
+        "orgId": "org_3",
+        "userId": "usr_1",
+        "role": "viewer",
+        "status": "active",
+        "createdAt": "2024-06-20T09:00:00Z",
+        "user": {
+          "id": "usr_1",
+          "email": "user@fake.com",
+          "name": "Fake User",
+          "profileImageUrl": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=256&h=256&fit=crop&crop=face",
+          "coverImageUrl": "https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=400&fit=crop",
+          "bio": "Credentialing specialist with 8+ years of experience in open badges, micro-credentials, and workforce development. Passionate about making skills visible and verifiable.",
+          "title": "Director of Credentialing",
+          "location": "Austin, TX",
+          "socialLinks": {
+            "linkedin": "https://linkedin.com/in/fakeuser",
+            "website": "https://fakeuser.dev",
+            "x": "https://x.com/fakeuser"
+          },
+          "createdAt": "2024-03-15T10:30:00Z"
+        }
+      }
+    ]
+  }
+}
